@@ -1,0 +1,15 @@
+/* Dusk, no-install version.
+   Safari > Settings > Advanced > Style sheet > Other... > pick this file.
+   Turns every site dark, including ones that are already dark (those will look light).
+   To turn it off, set Style sheet back to None. */
+html {
+  filter: invert(0.9) hue-rotate(180deg) !important;
+  background-color: #fff !important;
+}
+img, video, picture, canvas, iframe, embed, object,
+svg image, [style*="background-image"] {
+  filter: invert(1) hue-rotate(180deg) !important;
+}
+[style*="background-image"] img, picture img {
+  filter: none !important;
+}

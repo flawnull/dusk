@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <span class="logo">●</span>
+    <h1>Dusk</h1>
+  </header>
+
+  <label class="row">
+    <span>Dark mode</span>
+    <input type="checkbox" id="enabled" class="switch">
+  </label>
+
+  <label class="row">
+    <span>On <b id="host">this site</b></span>
+    <input type="checkbox" id="site" class="switch">
+  </label>
+
+  <label class="row col">
+    <span>Intensity <output id="intensityValue"></output></span>
+    <input type="range" id="intensity" min="50" max="100" step="5">
+  </label>
+
+  <footer>No tracking. No network. Settings stay on your Mac.</footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>
