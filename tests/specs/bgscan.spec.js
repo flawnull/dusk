@@ -23,7 +23,7 @@ async function scanDone(page, ms = 2500) {
 
 const marked = (page, sel) => page.evaluate((s) => document.querySelector(s).hasAttribute("data-dusk-bg"), sel);
 const filterOf = (page, sel) => page.evaluate((s) => getComputedStyle(document.querySelector(s)).filter, sel);
-const REINVERT = /^invert\(1\) contrast\([\d.]+\) hue-rotate\(180deg\)$/;
+const REINVERT = /^(brightness\([\d.]+\) )?invert\(1\) contrast\([\d.]+\) hue-rotate\(180deg\)$/;
 
 test("stylesheet (class-based) bg image gets marked and re-inverted", async ({ page }) => {
   await openPage(page, { html: doc(`.hero{width:200px;height:100px;background-image:url(${IMG})}`, '<div class="hero" id="h"></div>') });

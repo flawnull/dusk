@@ -7,6 +7,8 @@ const DEFAULTS = {
   siteModes: {},
   disabledSites: [],
   intensity: 90,
+  warmth: 0,
+  dimImages: false,
 };
 
 const STATE_TEXT = {
@@ -58,6 +60,9 @@ async function init() {
   $("followSystem").checked = settings.followSystem;
   $("intensity").value = settings.intensity;
   $("intensityValue").textContent = settings.intensity + "%";
+  $("warmth").value = settings.warmth;
+  $("warmthValue").textContent = warmthLabel(settings.warmth);
+  $("dimImages").checked = settings.dimImages;
 
   const radios = document.querySelectorAll('input[name="siteMode"]');
   if (tab) {
@@ -80,6 +85,10 @@ async function init() {
     api.storage.local.set({ followSystem: e.target.checked });
   });
 
+  $("dimImages").addEventListener("change", (e) => {
+    api.storage.local.set({ dimImages: e.target.checked });
+  });
+
   for (const r of radios) {
     r.addEventListener("change", async (e) => {
       if (!e.target.checked || !tab) return;
@@ -93,19 +102,29 @@ async function init() {
     });
   }
 
-  // Every write restyles every open tab, so write at most every 150 ms while
-  // dragging, and always once when the slider is released.
+  slider("intensity", (v) => v + "%");
+  slider("warmth", warmthLabel);
+}
+
+function warmthLabel(v) {
+  return Number(v) === 0 ? "Off" : v + "%";
+}
+
+// Every write restyles every open tab, so write at most every 150 ms while
+// dragging, and always once when the slider is released.
+function slider(key, label) {
+  const input = $(key);
   let pending = null;
-  const saveIntensity = () => {
+  const save = () => {
     clearTimeout(pending);
     pending = null;
-    api.storage.local.set({ intensity: Number($("intensity").value) });
+    api.storage.local.set({ [key]: Number(input.value) });
   };
-  $("intensity").addEventListener("input", (e) => {
-    $("intensityValue").textContent = e.target.value + "%";
-    if (pending === null) pending = setTimeout(saveIntensity, 150);
+  input.addEventListener("input", () => {
+    $(key + "Value").textContent = label(input.value);
+    if (pending === null) pending = setTimeout(save, 150);
   });
-  $("intensity").addEventListener("change", saveIntensity);
+  input.addEventListener("change", save);
 }
 
 init();

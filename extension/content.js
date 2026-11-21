@@ -3,7 +3,7 @@
 // How it works: dusk.css (injected by Safari) inverts the page with a CSS
 // filter, then re-inverts media (images, video, canvas, iframes) so they look
 // normal. This script only switches it on or off with a data-dusk attribute
-// on <html> and passes the intensity as two CSS custom properties. There is
+// on <html> and passes your settings as CSS custom properties. There is
 // no DOM walking, no MutationObserver on the page and no per-element work, so
 // the cost stays flat no matter how big or busy the page is.
 //
@@ -23,7 +23,11 @@
     siteModes: {},      // host -> "on" | "off"; missing means auto
     disabledSites: [],  // legacy (v1.0), read as "off"
     intensity: 90,
+    warmth: 0,          // 0..100, a sepia tint for night reading
+    dimImages: false,   // tone down bright photos on a dark page
   };
+
+  const VARS = ["--dusk-a", "--dusk-c", "--dusk-s", "--dusk-img"];
 
   // Slider 50..100 maps to an invert amount of 0.80..1.00. Below about 0.75
   // light and dark collapse into the same gray and text becomes unreadable.
@@ -33,7 +37,13 @@
     return 0.8 + ((i - 50) / 50) * 0.2;
   }
 
-  function apply(intensity) {
+  // Warmth 0..100 maps to sepia 0..0.5; more turns text muddy brown.
+  function sepiaAmount(warmth) {
+    const n = Number(warmth);
+    return (Math.min(100, Math.max(0, Number.isFinite(n) ? n : 0)) / 100) * 0.5;
+  }
+
+  function apply() {
     const de = document.documentElement;
     if (!de) {
       // Very early in page load there may be no <html> yet. Wait for it once.
@@ -46,11 +56,16 @@
       obs.observe(document, { childList: true });
       return;
     }
-    const a = invertAmount(intensity);
+    const a = invertAmount(settings.intensity);
     // The page filter maps a color x to a + (1 - 2a)x. invert(1) followed by
     // contrast(1 / (2a - 1)) on media is the exact inverse, so photos keep
     // their real colors instead of looking washed out.
-    const vars = { "--dusk-a": a.toFixed(3), "--dusk-c": (1 / (2 * a - 1)).toFixed(3) };
+    const vars = {
+      "--dusk-a": a.toFixed(3),
+      "--dusk-c": (1 / (2 * a - 1)).toFixed(3),
+      "--dusk-s": sepiaAmount(settings.warmth).toFixed(3),
+      "--dusk-img": settings.dimImages === true ? "0.8" : "1",
+    };
     for (const [k, v] of Object.entries(vars)) {
       if (de.style.getPropertyValue(k) !== v) de.style.setProperty(k, v);
     }
@@ -61,7 +76,7 @@
     const de = document.documentElement;
     if (!de) return;
     if (de.hasAttribute(ATTR)) de.removeAttribute(ATTR);
-    for (const k of ["--dusk-a", "--dusk-c"]) {
+    for (const k of VARS) {
       if (de.style.getPropertyValue(k)) de.style.removeProperty(k);
     }
     if (de.getAttribute("style") === "") de.removeAttribute("style");
@@ -255,7 +270,7 @@
   function render() {
     const s = state();
     if (s === "active" || s === "forced") {
-      apply(settings.intensity);
+      apply();
       startBgScan();
     } else {
       remove();

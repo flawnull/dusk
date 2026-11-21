@@ -284,7 +284,7 @@ test.describe("css rules parse in WebKit", () => {
       p.showPopover();
       return [getComputedStyle(d).filter, getComputedStyle(p).filter];
     });
-    for (const f of res) expect(f).toMatch(/^invert\(0\.96\) hue-rotate\(180deg\)$/);
+    for (const f of res) expect(f).toMatch(/^invert\(0\.96\) hue-rotate\(180deg\)( sepia\(0\))?$/);
   });
 
   test("non-modal dialog keeps no own filter (it is inside the page filter)", async ({ page }) => {

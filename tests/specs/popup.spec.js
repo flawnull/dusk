@@ -114,3 +114,42 @@ test("status refreshes after a setting change", async ({ page }) => {
   await page.locator("#enabled").click();
   await expect(page.locator("#status")).toHaveText("Dark mode is off.");
 });
+
+test("warmth slider shows Off at 0, saves a number and updates the label", async ({ page }) => {
+  await openPopup(page);
+  await expect(page.locator("#warmthValue")).toHaveText("Off");
+  await page.locator("#warmth").fill("40");
+  await wait(page, 250);
+  await expect(page.locator("#warmthValue")).toHaveText("40%");
+  expect((await store(page)).warmth).toBe(40);
+});
+
+test("Dim images switch writes dimImages and reflects stored value", async ({ page }) => {
+  await openPopup(page, { settings: { dimImages: true } });
+  await expect(page.locator("#dimImages")).toBeChecked();
+  await page.locator("#dimImages").click();
+  await wait(page, 50);
+  expect((await store(page)).dimImages).toBe(false);
+});
+
+test("dragging a slider writes at most a few times, last value wins", async ({ page }) => {
+  await openPopup(page);
+  await page.evaluate(() => {
+    const el = /** @type {HTMLInputElement} */ (document.getElementById("intensity"));
+    for (let v = 50; v <= 100; v += 5) { el.value = String(v); el.dispatchEvent(new Event("input")); }
+    el.dispatchEvent(new Event("change"));
+  });
+  await wait(page, 250);
+  const writes = await page.evaluate(() => window.__duskWrites.filter((w) => "intensity" in w));
+  expect(writes.length).toBeLessThanOrEqual(2);
+  expect(writes.at(-1).intensity).toBe(100);
+});
+
+test("popup fits Safari's popover: no horizontal scroll, height under 600px", async ({ page }) => {
+  await openPopup(page);
+  const size = await page.evaluate(() => ({
+    w: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth, h: document.body.scrollHeight,
+  }));
+  expect(size.w).toBeLessThanOrEqual(size.cw);
+  expect(size.h).toBeLessThan(600);
+});

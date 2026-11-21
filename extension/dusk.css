@@ -3,10 +3,13 @@
    Content-Security-Policy cannot block it (an injected <style> tag can be).
    It does nothing until content.js sets data-dusk on <html>.
    --dusk-a: invert amount for the page (0.80 to 1.00).
-   --dusk-c: contrast that exactly undoes the page filter on media, 1 / (2a - 1). */
+   --dusk-c: contrast that exactly undoes the page filter on media, 1 / (2a - 1).
+   --dusk-s: sepia (warmth), applied after the inversion so it tints everything.
+   --dusk-img: brightness for media (1, or 0.8 with Dim images). It comes first
+   in the media chain so it survives the page filter undone by the others. */
 
 html[data-dusk] {
-  filter: invert(var(--dusk-a, 0.92)) hue-rotate(180deg) !important;
+  filter: invert(var(--dusk-a, 0.92)) hue-rotate(180deg) sepia(var(--dusk-s, 0)) !important;
   background-color: #fff !important;
   color-scheme: light !important;
 }
@@ -15,7 +18,7 @@ html[data-dusk] {
    (inline or from a stylesheet) that are smaller than half the viewport. */
 html[data-dusk] :is(img, video, picture, canvas, iframe, embed, object, svg image),
 html[data-dusk] [data-dusk-bg] {
-  filter: invert(1) contrast(var(--dusk-c, 1.19)) hue-rotate(180deg) !important;
+  filter: brightness(var(--dusk-img, 1)) invert(1) contrast(var(--dusk-c, 1.19)) hue-rotate(180deg) !important;
 }
 
 /* Do not flip media twice when it sits inside a re-inverted box. */
@@ -29,10 +32,10 @@ html[data-dusk] picture source {
    filter, so they get their own. One rule per selector: an old Safari that
    does not know a selector drops only that rule. */
 html[data-dusk] dialog:modal {
-  filter: invert(var(--dusk-a, 0.92)) hue-rotate(180deg) !important;
+  filter: invert(var(--dusk-a, 0.92)) hue-rotate(180deg) sepia(var(--dusk-s, 0)) !important;
 }
 html[data-dusk] :popover-open {
-  filter: invert(var(--dusk-a, 0.92)) hue-rotate(180deg) !important;
+  filter: invert(var(--dusk-a, 0.92)) hue-rotate(180deg) sepia(var(--dusk-s, 0)) !important;
 }
 
 /* Fullscreen also escapes the page filter: show it in natural colors. */

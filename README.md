@@ -42,13 +42,17 @@ If Dusk does not show up in step 5, enable **Safari > Settings > Advanced > Show
 
 ## Use
 
-Click the moon in the Safari toolbar:
+Click the Dusk button in the Safari toolbar. If you do not see it, choose **View > Customize Toolbar** and drag Dusk onto the toolbar.
 
 - **Dark mode**: global on/off.
 - **Status line**: what Dusk is doing on this page, for example "This site is already dark".
 - **Only when my Mac is dark**: follow the macOS appearance and switch live with it.
 - **This site**: **Auto** (darken unless already dark), **Always** (for sites Dusk wrongly thinks are dark) or **Off**.
 - **Intensity**: 50% to 100%. Lower is softer gray, higher is closer to black.
+- **Warmth**: a sepia tint for night reading, mostly visible on text.
+- **Dim images**: tones photos down to 80% brightness so they do not glare on a dark page.
+
+Every change applies to open tabs right away. No need to open Safari Settings.
 
 ## No-Xcode option
 
