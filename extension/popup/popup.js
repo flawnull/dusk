@@ -40,7 +40,7 @@ async function refreshStatus(tab) {
     const res = await api.tabs.sendMessage(tab.id, { type: "dusk:state" });
     el.textContent = STATE_TEXT[res && res.state] || "";
   } catch {
-    el.textContent = "Reload this page to apply Dusk.";
+    el.textContent = "Reload this page, or allow Dusk on this website in Safari > Settings > Extensions.";
   }
 }
 
@@ -93,11 +93,19 @@ async function init() {
     });
   }
 
+  // Every write restyles every open tab, so write at most every 150 ms while
+  // dragging, and always once when the slider is released.
+  let pending = null;
+  const saveIntensity = () => {
+    clearTimeout(pending);
+    pending = null;
+    api.storage.local.set({ intensity: Number($("intensity").value) });
+  };
   $("intensity").addEventListener("input", (e) => {
-    const value = Number(e.target.value);
-    $("intensityValue").textContent = value + "%";
-    api.storage.local.set({ intensity: value });
+    $("intensityValue").textContent = e.target.value + "%";
+    if (pending === null) pending = setTimeout(saveIntensity, 150);
   });
+  $("intensity").addEventListener("change", saveIntensity);
 }
 
 init();

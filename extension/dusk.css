@@ -1,0 +1,51 @@
+/* Dusk dark style.
+   Safari injects this file as an extension stylesheet, so a page's
+   Content-Security-Policy cannot block it (an injected <style> tag can be).
+   It does nothing until content.js sets data-dusk on <html>.
+   --dusk-a: invert amount for the page (0.80 to 1.00).
+   --dusk-c: contrast that exactly undoes the page filter on media, 1 / (2a - 1). */
+
+html[data-dusk] {
+  filter: invert(var(--dusk-a, 0.92)) hue-rotate(180deg) !important;
+  background-color: #fff !important;
+  color-scheme: light !important;
+}
+
+/* data-dusk-bg: set by content.js on elements with a url() background image
+   (inline or from a stylesheet) that are smaller than half the viewport. */
+html[data-dusk] :is(img, video, picture, canvas, iframe, embed, object, svg image),
+html[data-dusk] [data-dusk-bg] {
+  filter: invert(1) contrast(var(--dusk-c, 1.19)) hue-rotate(180deg) !important;
+}
+
+/* Do not flip media twice when it sits inside a re-inverted box. */
+html[data-dusk] [data-dusk-bg] :is(img, video, picture, canvas, iframe, embed, object, svg image, [data-dusk-bg]),
+html[data-dusk] picture img,
+html[data-dusk] picture source {
+  filter: none !important;
+}
+
+/* Modal dialogs and popovers render in the top layer, outside the page
+   filter, so they get their own. One rule per selector: an old Safari that
+   does not know a selector drops only that rule. */
+html[data-dusk] dialog:modal {
+  filter: invert(var(--dusk-a, 0.92)) hue-rotate(180deg) !important;
+}
+html[data-dusk] :popover-open {
+  filter: invert(var(--dusk-a, 0.92)) hue-rotate(180deg) !important;
+}
+
+/* Fullscreen also escapes the page filter: show it in natural colors. */
+html[data-dusk] :fullscreen,
+html[data-dusk] :fullscreen :is(img, video, picture, canvas, iframe, embed, object, svg image) {
+  filter: none !important;
+}
+html[data-dusk] :-webkit-full-screen,
+html[data-dusk] :-webkit-full-screen :is(img, video, picture, canvas, iframe, embed, object, svg image) {
+  filter: none !important;
+}
+
+html[data-dusk] ::selection {
+  background: #3a5f9e;
+  color: #fff;
+}

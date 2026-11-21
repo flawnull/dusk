@@ -6,16 +6,16 @@ I built it because the free Safari dark mode extensions I tried kept crashing Sa
 
 ## How it works
 
-Dusk adds one `<style>` tag to each page. It inverts the page colors with a CSS filter, then flips images, video, canvas and iframes back so they look normal. Media is re-inverted with a matching contrast correction, so photos keep their real colors at every intensity. Pages that already have a dark background are left alone: Dusk samples what is actually painted on screen, not just `<body>`.
+Dusk adds one stylesheet to each page. Safari injects it as an extension stylesheet, so a site's Content-Security-Policy cannot block it. It inverts the page colors with a CSS filter, then flips images, video, canvas and iframes back so they look normal. Media is re-inverted with a matching contrast correction, so photos keep their real colors at every intensity. Pages that already have a dark background are left alone: Dusk samples what is actually painted on screen, not just `<body>`.
 
-There is no DOM scanning, no `MutationObserver` watching the page, and no background script. Safari's rendering engine does all the work, so cost stays flat on heavy pages and nothing keeps running when you switch apps.
+Background images set from a site's stylesheet cannot be matched by CSS alone, so Dusk finds them in idle time: a few milliseconds at a time, reading computed styles once per element, and only new elements after that. There is no background script, and when Dusk is off for a page it does no work at all. Safari's rendering engine does the rest, so nothing keeps running when you switch apps.
 
 ## Privacy
 
 - No network requests. The code never calls `fetch`, `XMLHttpRequest` or anything similar.
 - No access to screen, tabs history, cookies, keystrokes or page content.
 - Permissions: `storage` (your settings) and `activeTab` (so the popup can show the current site name).
-- The whole extension is about 200 lines. Read it in [`extension/`](extension/).
+- The whole extension is about 600 lines, including comments. Read it in [`extension/`](extension/).
 
 ## Install (needs Xcode, free)
 
@@ -35,7 +35,7 @@ Safari only loads extensions that live inside a Mac app, so you build a tiny wra
 3. Xcode opens. Click the **Dusk** project in the sidebar, then for both the **Dusk** and **Dusk Extension** targets go to **Signing & Capabilities** and set **Team** to your Apple ID (Xcode > Settings > Accounts to add it; a free account works).
 4. Press **Cmd+R**. A small Dusk window opens. You can close it.
 
-   Skip steps 3 and 4 next time by passing your team ID: `TEAM=ABCDE12345 ./build-mac.sh` builds, signs and launches the app. Find the ID with `security find-identity -v -p codesigning` (the code in brackets). Free Apple ID signing expires after about 7 days; run the script again to renew.
+   Skip steps 3 and 4 next time by passing your team ID: `TEAM=ABCDE12345 ./build-mac.sh` builds, signs and launches the app. Find your team ID with `./build-mac.sh --teams`. Free Apple ID signing expires after about 7 days; run the script again to renew.
 5. In Safari: **Settings > Extensions**, tick **Dusk**, and allow it on all websites.
 
 If Dusk does not show up in step 5, enable **Safari > Settings > Advanced > Show features for web developers**, then **Develop > Allow Unsigned Extensions**. With a free Apple ID team this is usually not needed. With "Sign to Run Locally" Safari resets that option on every launch, so pick your Apple ID team.
@@ -68,14 +68,24 @@ extension/            the web extension (manifest v3)
 build-mac.sh          wraps the extension in a macOS app via Xcode
 stylesheet-fallback/  single CSS file for Safari's built-in style sheet option
 scripts/make_icons.py regenerates the icons
+tests/                WebKit test suite (Playwright)
 ```
 
 ## Known limits
 
 - Inversion is a filter, so a few colors shift slightly. Brand colors in logos made with CSS (not images) will look off.
 - If Dusk guesses wrong about a site being dark or light, set that site to **Always** or **Off**.
-- Background images set from a stylesheet (not inline) are inverted with the page.
+- Elements whose background image changes later via a class change (not a new element) keep their first look until reload.
 - Fullscreen video and content show in natural colors.
+- Icons drawn as background images on `::before` / `::after` stay inverted.
+
+## Tests
+
+The content script and popup run in real WebKit (Safari's engine) through Playwright:
+
+```bash
+cd tests && npm install && npx playwright install webkit && npx playwright test
+```
 
 ## License
 

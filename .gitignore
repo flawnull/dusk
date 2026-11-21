@@ -2,3 +2,7 @@ xcode/
 .DS_Store
 *.xcuserstate
 xcuserdata/
+.claude/
+node_modules/
+test-results/
+playwright-report/
