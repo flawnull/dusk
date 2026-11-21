@@ -3,7 +3,8 @@
 # Needs Xcode (free from the App Store). Run from the repo folder:
 #
 #   ./build-mac.sh                 create the Xcode project and open it
-#   TEAM=ABCDE12345 ./build-mac.sh also build, sign with that team and launch
+#   TEAM=ABCDE12345 ./build-mac.sh also build, sign with that team and register
+#                                  it with Safari (no app window; LAUNCH=1 opens it)
 #
 # Find your team ID in Xcode > Settings > Accounts, or run ./build-mac.sh --teams
 # (the code in brackets from `security find-identity` is NOT the team ID).
@@ -98,6 +99,7 @@ echo "Building and signing with team $TEAM..."
 if ! xcodebuild -project "$PROJECT" -scheme Dusk -configuration Release \
   -derivedDataPath xcode/build \
   DEVELOPMENT_TEAM="$TEAM" CODE_SIGN_STYLE=Automatic \
+  CURRENT_PROJECT_VERSION="$(date +%s)" \
   -allowProvisioningUpdates -quiet build; then
   echo
   echo "Build failed. If the errors above mention signing, check that $TEAM is your team ID"
@@ -108,9 +110,19 @@ if ! xcodebuild -project "$PROJECT" -scheme Dusk -configuration Release \
 fi
 
 APP="xcode/build/Build/Products/Release/Dusk.app"
-pkill -x Dusk 2>/dev/null || true
-open "$APP"
+# Register the new build with macOS directly. A fresh build number
+# (CURRENT_PROJECT_VERSION above) makes Safari treat it as an update and reload
+# the extension, so there is no need to open the app and its window.
+LSREGISTER=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
+"$LSREGISTER" -f -R "$APP" >/dev/null 2>&1 || true
+for appex in "$APP"/Contents/PlugIns/*.appex; do
+  pluginkit -a "$appex" >/dev/null 2>&1 || true
+done
+if [ "${LAUNCH:-}" = "1" ]; then
+  pkill -x Dusk 2>/dev/null || true
+  open "$APP"
+fi
 echo
-echo "Built and launched $APP"
+echo "Built and registered $APP"
 echo "Safari loads the extension from that app, so leave it there."
-echo "Next: Safari > Settings > Extensions, tick Dusk."
+echo "First time only: Safari > Settings > Extensions, tick Dusk."

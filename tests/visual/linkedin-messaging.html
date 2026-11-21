@@ -1,0 +1,161 @@
+<!doctype html>
+<!-- Faithful-as-possible copy of LinkedIn's bottom-right messaging overlay
+     (light theme), using LinkedIn's public class names and colors. Photos are
+     generated at runtime and set lazily the way LinkedIn does: placeholder
+     first, then src swap, class swap, or inline background-image. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  :root {
+    --color-background-container: #fff;
+    --color-background-canvas: #f4f2ee;
+    --color-text: rgba(0,0,0,.9);
+    --color-text-low-emphasis: rgba(0,0,0,.6);
+    --color-border-faint: rgba(140,140,140,.2);
+    --color-background-new: #ebf4fd;
+    --color-signal-positive: #01754f;
+    --color-notification: #cb112d;
+    --color-action: #0a66c2;
+  }
+  body { margin: 0; background: var(--color-background-canvas); font: 14px/1.4 -apple-system, system-ui, sans-serif; color: var(--color-text); }
+  .feed { width: 560px; margin: 24px 0 0 120px; }
+  .feed-card { background: #fff; border-radius: 8px; box-shadow: 0 0 0 1px var(--color-border-faint); padding: 16px; margin-bottom: 8px; }
+  .feed-card p { margin: 6px 0; }
+  .feed-card .meta { color: var(--color-text-low-emphasis); font-size: 12px; }
+  .global-nav { height: 52px; background: #fff; border-bottom: 1px solid var(--color-border-faint); }
+
+  .msg-overlay-container { position: fixed; right: 16px; bottom: 0; z-index: 1000; display: flex; align-items: flex-end; will-change: transform; transform: translateZ(0); }
+  .msg-overlay-list-bubble { width: 360px; height: 640px; display: flex; flex-direction: column; background: var(--color-background-container);
+    border-radius: 10px 10px 0 0; box-shadow: 0 0 0 1px var(--color-border-faint), 0 4px 4px rgba(0,0,0,.3); overflow: hidden; }
+  .msg-overlay-bubble-header { display: flex; align-items: center; height: 48px; padding: 0 8px; border-bottom: 1px solid var(--color-border-faint); }
+  .msg-overlay-bubble-header__details { display: flex; align-items: center; gap: 8px; flex: 1; }
+  .msg-overlay-bubble-header__title { font-size: 14px; font-weight: 600; margin: 0; }
+  .msg-overlay-bubble-header__controls button { width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; }
+  .msg-overlay-bubble-header__controls button:hover { background: rgba(0,0,0,.08); }
+  .msg-overlay-bubble-header__controls svg { width: 16px; height: 16px; fill: rgba(0,0,0,.6); }
+
+  .presence-entity { position: relative; flex: none; }
+  .presence-entity--size-1 { width: 32px; height: 32px; }
+  .presence-entity--size-3 { width: 56px; height: 56px; }
+  .presence-entity__image { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; background-size: cover; background-position: center; }
+  .presence-entity__indicator { position: absolute; right: -2px; bottom: -2px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid #fff; background: var(--color-signal-positive); }
+  .ghost-person { background-color: #e9e5df; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 56'%3E%3Ccircle cx='28' cy='22' r='10' fill='%23a5a29d'/%3E%3Cpath d='M8 56c2-12 10-18 20-18s18 6 20 18z' fill='%23a5a29d'/%3E%3C/svg%3E"); background-size: cover; }
+
+  .msg-overlay-list-bubble__search { padding: 8px 12px; }
+  .msg-overlay-list-bubble__search input { width: 100%; box-sizing: border-box; height: 32px; border-radius: 4px; border: 0; background: #edf3f8; padding: 0 8px; font: inherit; }
+  .msg-conversations-container__conversations-list { list-style: none; margin: 0; padding: 0; overflow-y: auto; flex: 1; }
+  .msg-conversation-listitem { position: relative; }
+  .msg-conversation-listitem__link { display: flex; gap: 8px; padding: 12px; text-decoration: none; color: inherit; }
+  .msg-conversation-listitem__link:hover { background: rgba(0,0,0,.08); }
+  .msg-conversation-card--unread { background: var(--color-background-new); }
+  .msg-conversation-card__content { flex: 1; min-width: 0; }
+  .msg-conversation-card__row { display: flex; justify-content: space-between; gap: 8px; }
+  .msg-conversation-listitem__participant-names { font-weight: 600; font-size: 14px; color: var(--color-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .msg-conversation-card__time-stamp { font-size: 12px; color: var(--color-text-low-emphasis); }
+  .msg-conversation-card__message-snippet { font-size: 14px; color: var(--color-text-low-emphasis); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .msg-conversation-card--unread .msg-conversation-card__message-snippet { color: var(--color-text); font-weight: 600; }
+  .notification-badge { min-width: 16px; height: 16px; border-radius: 8px; background: var(--color-notification); color: #fff; font-size: 12px; font-weight: 600; text-align: center; line-height: 16px; padding: 0 4px; }
+  .msg-conversation-card__pill { display: inline-block; border-radius: 2px; background: #dbe7f3; color: #0a3d6b; font-size: 12px; padding: 0 4px; }
+</style>
+</head>
+<body>
+  <div class="global-nav"></div>
+  <main class="feed">
+    <div class="feed-card"><p><b>Feed post</b></p><p>Some ordinary feed text for comparison.</p><p class="meta">2h • Edited</p></div>
+    <div class="feed-card"><p><b>Another post</b></p><p>Lorem ipsum dolor sit amet, consectetur adipiscing.</p><p class="meta">5h</p></div>
+  </main>
+
+  <aside id="msg-overlay" class="msg-overlay-container">
+    <section class="msg-overlay-list-bubble">
+      <header class="msg-overlay-bubble-header">
+        <div class="msg-overlay-bubble-header__details">
+          <div class="presence-entity presence-entity--size-1">
+            <img id="me" class="presence-entity__image EntityPhoto-circle-1 evi-image lazy-image ghost-person" alt=""
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+            <div class="presence-entity__indicator presence-entity__indicator--is-online"></div>
+          </div>
+          <h2 class="msg-overlay-bubble-header__title">Messaging</h2>
+        </div>
+        <div class="msg-overlay-bubble-header__controls">
+          <button aria-label="more"><svg viewBox="0 0 16 16"><circle cx="3" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="13" cy="8" r="1.5"/></svg></button>
+          <button aria-label="compose"><svg viewBox="0 0 16 16"><path d="M2 12v2h2l7-7-2-2zM12 2l2 2-1 1-2-2z"/></svg></button>
+        </div>
+      </header>
+      <div class="msg-overlay-list-bubble__search"><input placeholder="Search messages"></div>
+      <ul id="list" class="msg-conversations-container__conversations-list"></ul>
+    </section>
+  </aside>
+
+<script>
+  // Generated "photos": dark navy background, light skin, dark hair. Distinct
+  // colors so an inverted render is obvious in pixel checks.
+  function photo(bg, skin, hair) {
+    const c = document.createElement("canvas");
+    c.width = c.height = 112;
+    const g = c.getContext("2d");
+    g.fillStyle = bg; g.fillRect(0, 0, 112, 112);
+    g.fillStyle = hair; g.beginPath(); g.arc(56, 46, 34, 0, Math.PI * 2); g.fill();
+    g.fillStyle = skin; g.beginPath(); g.arc(56, 54, 26, 0, Math.PI * 2); g.fill();
+    g.fillStyle = "#f2f2f2"; g.fillRect(16, 90, 80, 22);
+    return c.toDataURL("image/jpeg", 0.92);
+  }
+  window.PHOTOS = [
+    photo("#22406a", "#e0b49a", "#2a1d14"),
+    photo("#7a1f2b", "#c68863", "#111111"),
+    photo("#1f5e3a", "#f1c7a8", "#6b4423"),
+    photo("#3b3b3b", "#d9a07a", "#c9c9c9"),
+  ];
+  const people = [
+    ["Ada Lovelace", "Sounds good, see you Monday", "Nov 19", true, "img-lazy-src"],
+    ["Grace Hopper", "Thanks for the intro!", "Nov 18", false, "bg-inline-later"],
+    ["Alan Turing", "Can you send the deck?", "Nov 17", true, "bg-class-swap"],
+    ["Katherine Johnson", "Sponsored · Try Premium for free", "Nov 16", false, "ghost"],
+    ["Linus Torvalds", "lol", "Nov 15", false, "img-lazy-src"],
+    ["Margaret Hamilton", "Here's the doc I mentioned", "Nov 14", false, "bg-inline-later"],
+    ["Tim Berners-Lee", "Congrats on the new role!", "Nov 12", false, "img-eager"],
+    ["Barbara Liskov", "Let's catch up next week", "Nov 10", false, "bg-class-swap"],
+  ];
+  const style = document.createElement("style");
+  style.textContent = people.map((_, i) => `.EntityPhoto-loaded-${i}{background-image:url(${PHOTOS[i % 4]})}`).join("\n");
+  document.head.appendChild(style);
+  const list = document.getElementById("list");
+  people.forEach(([name, snip, time, unread, mode], i) => {
+    const li = document.createElement("li");
+    li.className = "msg-conversation-listitem msg-conversation-card" + (unread ? " msg-conversation-card--unread" : "");
+    const avatar = mode.startsWith("img")
+      ? `<img data-i="${i}" data-mode="${mode}" class="presence-entity__image msg-facepile-grid__img msg-facepile-grid__img--person evi-image lazy-image ghost-person" src="${mode === "img-eager" ? PHOTOS[i % 4] : "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"}" alt="">`
+      : `<div data-i="${i}" data-mode="${mode}" class="presence-entity__image EntityPhoto-circle-3 ghost-person"></div>`;
+    li.innerHTML = `
+      <a class="msg-conversation-listitem__link msg-conversations-container__convo-item-link" href="#">
+        <div class="presence-entity presence-entity--size-3">${avatar}${i % 3 === 0 ? '<div class="presence-entity__indicator"></div>' : ""}</div>
+        <div class="msg-conversation-card__content">
+          <div class="msg-conversation-card__row">
+            <h3 class="msg-conversation-listitem__participant-names">${name}</h3>
+            <time class="msg-conversation-card__time-stamp">${time}</time>
+          </div>
+          <div class="msg-conversation-card__row">
+            <p class="msg-conversation-card__message-snippet">${snip}</p>
+            ${unread ? '<span class="notification-badge">2</span>' : ""}
+          </div>
+          ${i === 3 ? '<span class="msg-conversation-card__pill">Sponsored</span>' : ""}
+        </div>
+      </a>`;
+    list.appendChild(li);
+  });
+  // Lazy load after the page has settled, like LinkedIn's IntersectionObserver.
+  setTimeout(() => {
+    const me = document.getElementById("me");
+    me.src = PHOTOS[3]; me.classList.remove("ghost-person");
+    for (const el of document.querySelectorAll("[data-mode]")) {
+      const i = Number(el.dataset.i), mode = el.dataset.mode;
+      if (mode === "img-lazy-src") { el.src = PHOTOS[i % 4]; el.classList.remove("ghost-person"); }
+      if (mode === "img-eager") el.classList.remove("ghost-person");
+      if (mode === "bg-inline-later") { el.classList.remove("ghost-person"); el.style.backgroundImage = `url(${PHOTOS[i % 4]})`; }
+      if (mode === "bg-class-swap") { el.classList.remove("ghost-person"); el.classList.add("EntityPhoto-loaded-" + i); }
+    }
+    document.documentElement.dataset.lazyDone = "1";
+  }, 1200);
+</script>
+</body>
+</html>

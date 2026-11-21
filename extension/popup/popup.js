@@ -47,9 +47,10 @@ async function refreshStatus(tab) {
 }
 
 function siteModeOf(settings, host) {
-  const mode = settings.siteModes[host];
+  const modes = settings.siteModes;
+  const mode = modes && typeof modes === "object" && Object.prototype.hasOwnProperty.call(modes, host) ? modes[host] : undefined;
   if (mode === "on" || mode === "off") return mode;
-  return settings.disabledSites.includes(host) ? "off" : "auto";
+  return Array.isArray(settings.disabledSites) && settings.disabledSites.includes(host) ? "off" : "auto";
 }
 
 async function init() {
@@ -93,11 +94,14 @@ async function init() {
     r.addEventListener("change", async (e) => {
       if (!e.target.checked || !tab) return;
       const current = { ...DEFAULTS, ...(await api.storage.local.get(DEFAULTS)) };
-      const siteModes = { ...current.siteModes };
-      if (e.target.value === "auto") delete siteModes[tab.host];
-      else siteModes[tab.host] = e.target.value;
+      // Built from entries, never by assignment: a host named "__proto__"
+      // would otherwise hit the prototype setter and be silently dropped.
+      const old = current.siteModes && typeof current.siteModes === "object" ? current.siteModes : {};
+      const entries = Object.entries(old).filter(([h, m]) => h !== tab.host && (m === "on" || m === "off"));
+      if (e.target.value !== "auto") entries.push([tab.host, e.target.value]);
+      const siteModes = Object.fromEntries(entries);
       // Retire the v1.0 list entry for this host so the new choice wins.
-      const disabledSites = current.disabledSites.filter((h) => h !== tab.host);
+      const disabledSites = (Array.isArray(current.disabledSites) ? current.disabledSites : []).filter((h) => h !== tab.host);
       api.storage.local.set({ siteModes, disabledSites });
     });
   }

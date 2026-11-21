@@ -1,6 +1,16 @@
 {
   "name": "dusk-tests",
   "private": true,
-  "scripts": { "test": "playwright test" },
-  "devDependencies": { "@playwright/test": "1.55.0" }
+  "scripts": {
+    "test": "playwright test",
+    "perf": "node perf/bench.js",
+    "perf:load": "node perf/load.js",
+    "visual": "node visual/run.js",
+    "visual:linkedin": "node visual/linkedin.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.55.0",
+    "fast-check": "3.23.2",
+    "pngjs": "7.0.0"
+  }
 }

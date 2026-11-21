@@ -1,4 +1,4 @@
-/* Dusk dark style.
+/* Dusk dark style. Generated layout, edit with care.
    Safari injects this file as an extension stylesheet, so a page's
    Content-Security-Policy cannot block it (an injected <style> tag can be).
    It does nothing until content.js sets data-dusk on <html>.
@@ -6,26 +6,98 @@
    --dusk-c: contrast that exactly undoes the page filter on media, 1 / (2a - 1).
    --dusk-s: sepia (warmth), applied after the inversion so it tints everything.
    --dusk-img: brightness for media (1, or 0.8 with Dim images). It comes first
-   in the media chain so it survives the page filter undone by the others. */
+   in the media chain so it survives the page filter undone by the others.
+
+   Marks set by content.js:
+   data-dusk-bg     element with a photo background image (inline or from a
+                    stylesheet), under half the viewport, little or no text
+   data-dusk-keep   block that was dark on the original page; kept dark
+   data-dusk-scrim  translucent dark overlay behind a modal; kept dark
+   data-dusk-pb/pa  ::before / ::after shows a photo
+   Selectors are written out, not grouped in :is(), so WebKit can index each
+   rule by tag or attribute, and an unknown selector only drops its own rule. */
 
 html[data-dusk] {
   filter: invert(var(--dusk-a, 0.92)) hue-rotate(180deg) sepia(var(--dusk-s, 0)) !important;
-  background-color: #fff !important;
-  color-scheme: light !important;
 }
 
-/* data-dusk-bg: set by content.js on elements with a url() background image
-   (inline or from a stylesheet) that are smaller than half the viewport. */
-html[data-dusk] :is(img, video, picture, canvas, iframe, embed, object, svg image),
-html[data-dusk] [data-dusk-bg] {
+/* Separate rule so content.js can read the page's own <html> background
+   (dark-site detection) by setting data-dusk-measure for one synchronous
+   moment. That attribute only appears on <html> itself, so toggling it
+   restyles one element instead of the whole page. */
+html[data-dusk]:not([data-dusk-measure]) {
+  background-color: #fff !important;
+}
+
+/* Media and marked boxes: undo the page filter exactly. */
+html[data-dusk] img,
+html[data-dusk] video,
+html[data-dusk] picture,
+html[data-dusk] canvas,
+html[data-dusk] iframe,
+html[data-dusk] embed,
+html[data-dusk] object,
+html[data-dusk] input[type="image" i],
+html[data-dusk] [data-dusk-bg],
+html[data-dusk] [data-dusk-keep] {
+  filter: brightness(var(--dusk-img, 1)) invert(1) contrast(var(--dusk-c, 1.19)) hue-rotate(180deg) !important;
+}
+/* WebKit ignores CSS filter on SVG child elements such as <image>, so an
+   <svg> that contains a photo (round avatars, masked thumbnails) counts as
+   media as a whole. Own rule: :has() is unknown before Safari 15.4. */
+html[data-dusk] svg:has(image) {
   filter: brightness(var(--dusk-img, 1)) invert(1) contrast(var(--dusk-c, 1.19)) hue-rotate(180deg) !important;
 }
 
+/* SVG files are almost always logos, icons and QR codes drawn in one dark
+   color. Re-inverting them makes them vanish on the dark page, so they are
+   inverted with the page like text instead. */
+html[data-dusk] img[src*=".svg" i],
+html[data-dusk] img[src^="data:image/svg" i] {
+  filter: none !important;
+}
+
 /* Do not flip media twice when it sits inside a re-inverted box. */
-html[data-dusk] [data-dusk-bg] :is(img, video, picture, canvas, iframe, embed, object, svg image, [data-dusk-bg]),
+html[data-dusk] [data-dusk-bg] img,
+html[data-dusk] [data-dusk-bg] video,
+html[data-dusk] [data-dusk-bg] picture,
+html[data-dusk] [data-dusk-bg] canvas,
+html[data-dusk] [data-dusk-bg] iframe,
+html[data-dusk] [data-dusk-bg] embed,
+html[data-dusk] [data-dusk-bg] object,
+html[data-dusk] [data-dusk-bg] input[type="image" i],
+html[data-dusk] [data-dusk-bg] [data-dusk-bg],
+html[data-dusk] [data-dusk-bg] [data-dusk-keep],
+html[data-dusk] [data-dusk-keep] img,
+html[data-dusk] [data-dusk-keep] video,
+html[data-dusk] [data-dusk-keep] picture,
+html[data-dusk] [data-dusk-keep] canvas,
+html[data-dusk] [data-dusk-keep] iframe,
+html[data-dusk] [data-dusk-keep] embed,
+html[data-dusk] [data-dusk-keep] object,
+html[data-dusk] [data-dusk-keep] input[type="image" i],
+html[data-dusk] [data-dusk-keep] [data-dusk-bg],
+html[data-dusk] [data-dusk-keep] [data-dusk-keep],
 html[data-dusk] picture img,
 html[data-dusk] picture source {
   filter: none !important;
+}
+html[data-dusk] [data-dusk-bg] svg:has(image),
+html[data-dusk] [data-dusk-keep] svg:has(image) {
+  filter: none !important;
+}
+
+/* Photos drawn by ::before / ::after (icons, decorative thumbnails). */
+html[data-dusk] [data-dusk-pb]::before,
+html[data-dusk] [data-dusk-pa]::after {
+  filter: brightness(var(--dusk-img, 1)) invert(1) contrast(var(--dusk-c, 1.19)) hue-rotate(180deg) !important;
+}
+
+/* A translucent black overlay behind a modal would turn into a milky white
+   veil. Painting it white with the same alpha makes it dark again after the
+   page filter, without touching its children. */
+html[data-dusk] [data-dusk-scrim] {
+  background-color: rgb(255 255 255 / var(--dusk-scrim-a, 0.5)) !important;
 }
 
 /* Modal dialogs and popovers render in the top layer, outside the page
@@ -40,11 +112,32 @@ html[data-dusk] :popover-open {
 
 /* Fullscreen also escapes the page filter: show it in natural colors. */
 html[data-dusk] :fullscreen,
-html[data-dusk] :fullscreen :is(img, video, picture, canvas, iframe, embed, object, svg image) {
+html[data-dusk] :fullscreen img,
+html[data-dusk] :fullscreen video,
+html[data-dusk] :fullscreen picture,
+html[data-dusk] :fullscreen canvas,
+html[data-dusk] :fullscreen iframe,
+html[data-dusk] :fullscreen embed,
+html[data-dusk] :fullscreen object,
+html[data-dusk] :fullscreen input[type="image" i],
+html[data-dusk] :fullscreen [data-dusk-bg],
+html[data-dusk] :fullscreen [data-dusk-keep] {
   filter: none !important;
 }
 html[data-dusk] :-webkit-full-screen,
-html[data-dusk] :-webkit-full-screen :is(img, video, picture, canvas, iframe, embed, object, svg image) {
+html[data-dusk] :-webkit-full-screen img,
+html[data-dusk] :-webkit-full-screen video,
+html[data-dusk] :-webkit-full-screen picture,
+html[data-dusk] :-webkit-full-screen canvas,
+html[data-dusk] :-webkit-full-screen iframe,
+html[data-dusk] :-webkit-full-screen embed,
+html[data-dusk] :-webkit-full-screen object,
+html[data-dusk] :-webkit-full-screen input[type="image" i],
+html[data-dusk] :-webkit-full-screen [data-dusk-bg],
+html[data-dusk] :-webkit-full-screen [data-dusk-keep] {
+  filter: none !important;
+}
+html[data-dusk] :fullscreen svg:has(image) {
   filter: none !important;
 }
 

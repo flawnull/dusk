@@ -1,0 +1,556 @@
+{
+  "heavy/none": {
+    "dcl": 29,
+    "load": 120,
+    "worstFrame": 306,
+    "over50": 1,
+    "overlay": null,
+    "avatarsMarked": null,
+    "meMarked": null,
+    "duskTotal": 0,
+    "recalc": 35.00000000000023,
+    "moRecords": 0,
+    "retainedNow": null,
+    "retainedLater": null,
+    "elements": 30616,
+    "marked": 0,
+    "breakdown": {}
+  },
+  "heavy/on": {
+    "dcl": 185,
+    "load": 242,
+    "worstFrame": 338,
+    "over50": 3,
+    "overlay": null,
+    "avatarsMarked": null,
+    "meMarked": 53.000000000000114,
+    "duskTotal": 144.00000000000006,
+    "recalc": 39,
+    "moRecords": 17,
+    "retainedNow": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 1,
+      "recheckDetached": 0
+    },
+    "retainedLater": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 0,
+      "recheckDetached": 0
+    },
+    "elements": 30617,
+    "marked": 2402,
+    "breakdown": {
+      "apply": {
+        "ms": 0,
+        "calls": 6,
+        "maxMs": 0
+      },
+      "render": {
+        "ms": 0,
+        "calls": 6,
+        "maxMs": 0
+      },
+      "loadSettings": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      },
+      "observer": {
+        "ms": 0,
+        "calls": 9,
+        "maxMs": 0
+      },
+      "pageIsAlreadyDark": {
+        "ms": 101.99999999999994,
+        "calls": 2,
+        "maxMs": 56.99999999999994
+      },
+      "checkDark": {
+        "ms": 117.00000000000006,
+        "calls": 2,
+        "maxMs": 65.00000000000006
+      },
+      "hasUrlBackground": {
+        "ms": 15,
+        "calls": 35456,
+        "maxMs": 1
+      },
+      "bgTooBig": {
+        "ms": 0,
+        "calls": 2548,
+        "maxMs": 0
+      },
+      "bgSlice": {
+        "ms": 27,
+        "calls": 6,
+        "maxMs": 7
+      }
+    }
+  },
+  "heavy/off": {
+    "dcl": 133,
+    "load": 133,
+    "worstFrame": 318,
+    "over50": 1,
+    "overlay": null,
+    "avatarsMarked": null,
+    "meMarked": null,
+    "duskTotal": 7.999999999999993,
+    "recalc": 34.00000000000023,
+    "moRecords": 2,
+    "retainedNow": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 0,
+      "recheckDetached": 0
+    },
+    "retainedLater": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 0,
+      "recheckDetached": 0
+    },
+    "elements": 30617,
+    "marked": 0,
+    "breakdown": {
+      "apply": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      },
+      "render": {
+        "ms": 0.9999999999999929,
+        "calls": 5,
+        "maxMs": 0.9999999999999929
+      },
+      "loadSettings": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      },
+      "remove": {
+        "ms": 0,
+        "calls": 4,
+        "maxMs": 0
+      },
+      "observer": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      },
+      "pageIsAlreadyDark": {
+        "ms": 7,
+        "calls": 2,
+        "maxMs": 5
+      },
+      "checkDark": {
+        "ms": 7,
+        "calls": 2,
+        "maxMs": 5
+      }
+    }
+  },
+  "storm/none": {
+    "dcl": 32,
+    "load": 134,
+    "worstFrame": 298,
+    "over50": 1,
+    "overlay": 27,
+    "avatarsMarked": null,
+    "meMarked": null,
+    "duskTotal": 0,
+    "recalc": 32.000000000000455,
+    "moRecords": 0,
+    "retainedNow": null,
+    "retainedLater": null,
+    "elements": 26121,
+    "marked": 0,
+    "breakdown": {}
+  },
+  "storm/on": {
+    "dcl": 210,
+    "load": 277,
+    "worstFrame": 343,
+    "over50": 3,
+    "overlay": 23,
+    "avatarsMarked": 24,
+    "meMarked": 50.999999999999886,
+    "duskTotal": 194.9999999999992,
+    "recalc": 36,
+    "moRecords": 2600,
+    "retainedNow": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 1,
+      "recheckDetached": 0
+    },
+    "retainedLater": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 0,
+      "recheckDetached": 0
+    },
+    "elements": 26122,
+    "marked": 2072,
+    "breakdown": {
+      "apply": {
+        "ms": 0,
+        "calls": 6,
+        "maxMs": 0
+      },
+      "render": {
+        "ms": 1,
+        "calls": 6,
+        "maxMs": 1
+      },
+      "loadSettings": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      },
+      "observer": {
+        "ms": 2.0000000000004547,
+        "calls": 368,
+        "maxMs": 1
+      },
+      "pageIsAlreadyDark": {
+        "ms": 121.00000000000003,
+        "calls": 2,
+        "maxMs": 69
+      },
+      "checkDark": {
+        "ms": 140,
+        "calls": 2,
+        "maxMs": 83
+      },
+      "hasUrlBackground": {
+        "ms": 25.000000000000227,
+        "calls": 41081,
+        "maxMs": 1.0000000000004547
+      },
+      "bgTooBig": {
+        "ms": 4,
+        "calls": 2907,
+        "maxMs": 1.9999999999995453
+      },
+      "bgSlice": {
+        "ms": 50.999999999999204,
+        "calls": 63,
+        "maxMs": 7
+      }
+    }
+  },
+  "storm/off": {
+    "dcl": 115,
+    "load": 116,
+    "worstFrame": 279,
+    "over50": 2,
+    "overlay": 27,
+    "avatarsMarked": null,
+    "meMarked": null,
+    "duskTotal": 7,
+    "recalc": 31,
+    "moRecords": 2,
+    "retainedNow": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 0,
+      "recheckDetached": 0
+    },
+    "retainedLater": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 0,
+      "recheckDetached": 0
+    },
+    "elements": 26122,
+    "marked": 0,
+    "breakdown": {
+      "apply": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      },
+      "render": {
+        "ms": 1,
+        "calls": 5,
+        "maxMs": 1
+      },
+      "loadSettings": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      },
+      "remove": {
+        "ms": 1,
+        "calls": 4,
+        "maxMs": 1
+      },
+      "observer": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      },
+      "pageIsAlreadyDark": {
+        "ms": 6,
+        "calls": 2,
+        "maxMs": 5
+      },
+      "checkDark": {
+        "ms": 6,
+        "calls": 2,
+        "maxMs": 5
+      }
+    }
+  },
+  "article/none": {
+    "dcl": 3,
+    "load": 6,
+    "worstFrame": 24,
+    "over50": 0,
+    "overlay": null,
+    "avatarsMarked": null,
+    "meMarked": null,
+    "duskTotal": 0,
+    "recalc": 0,
+    "moRecords": 0,
+    "retainedNow": null,
+    "retainedLater": null,
+    "elements": 141,
+    "marked": 0,
+    "breakdown": {}
+  },
+  "article/on": {
+    "dcl": 6,
+    "load": 8,
+    "worstFrame": 32,
+    "over50": 0,
+    "overlay": null,
+    "avatarsMarked": null,
+    "meMarked": null,
+    "duskTotal": 4,
+    "recalc": 1,
+    "moRecords": 12,
+    "retainedNow": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 1,
+      "recheckDetached": 0
+    },
+    "retainedLater": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 0,
+      "recheckDetached": 0
+    },
+    "elements": 142,
+    "marked": 0,
+    "breakdown": {
+      "apply": {
+        "ms": 0,
+        "calls": 6,
+        "maxMs": 0
+      },
+      "render": {
+        "ms": 0,
+        "calls": 6,
+        "maxMs": 0
+      },
+      "loadSettings": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      },
+      "observer": {
+        "ms": 0,
+        "calls": 4,
+        "maxMs": 0
+      },
+      "pageIsAlreadyDark": {
+        "ms": 3,
+        "calls": 2,
+        "maxMs": 3
+      },
+      "checkDark": {
+        "ms": 3,
+        "calls": 2,
+        "maxMs": 3
+      },
+      "hasUrlBackground": {
+        "ms": 0,
+        "calls": 135,
+        "maxMs": 0
+      },
+      "bgSlice": {
+        "ms": 1,
+        "calls": 2,
+        "maxMs": 1
+      }
+    }
+  },
+  "article/off": {
+    "dcl": 7,
+    "load": 8,
+    "worstFrame": 25,
+    "over50": 0,
+    "overlay": null,
+    "avatarsMarked": null,
+    "meMarked": null,
+    "duskTotal": 4,
+    "recalc": 0,
+    "moRecords": 2,
+    "retainedNow": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 0,
+      "recheckDetached": 0
+    },
+    "retainedLater": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 0,
+      "recheckDetached": 0
+    },
+    "elements": 142,
+    "marked": 0,
+    "breakdown": {
+      "apply": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      },
+      "render": {
+        "ms": 1,
+        "calls": 5,
+        "maxMs": 1
+      },
+      "loadSettings": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      },
+      "remove": {
+        "ms": 1,
+        "calls": 4,
+        "maxMs": 1
+      },
+      "observer": {
+        "ms": 1,
+        "calls": 1,
+        "maxMs": 1
+      },
+      "pageIsAlreadyDark": {
+        "ms": 3,
+        "calls": 2,
+        "maxMs": 3
+      },
+      "checkDark": {
+        "ms": 3,
+        "calls": 2,
+        "maxMs": 3
+      }
+    }
+  },
+  "scroll/none": {
+    "dcl": 25,
+    "load": 110,
+    "worstFrame": 299,
+    "over50": 2,
+    "overlay": null,
+    "avatarsMarked": null,
+    "meMarked": null,
+    "duskTotal": 0,
+    "recalc": 31,
+    "moRecords": 0,
+    "retainedNow": null,
+    "retainedLater": null,
+    "elements": 30616,
+    "marked": 0,
+    "scroll": {
+      "avg": 16.666666666666668,
+      "p95": 18,
+      "max": 18
+    },
+    "breakdown": {}
+  },
+  "scroll/on": {
+    "dcl": 99,
+    "load": 170,
+    "worstFrame": 304,
+    "over50": 2,
+    "overlay": null,
+    "avatarsMarked": null,
+    "meMarked": 22,
+    "duskTotal": 278.99999999999903,
+    "recalc": 33,
+    "moRecords": 17,
+    "retainedNow": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 1,
+      "recheckDetached": 0
+    },
+    "retainedLater": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 0,
+      "recheckDetached": 0
+    },
+    "elements": 30617,
+    "marked": 2402,
+    "scroll": {
+      "avg": 16.666666666666668,
+      "p95": 18,
+      "max": 22
+    },
+    "breakdown": {
+      "apply": {
+        "ms": 0,
+        "calls": 6,
+        "maxMs": 0
+      },
+      "render": {
+        "ms": 0,
+        "calls": 6,
+        "maxMs": 0
+      },
+      "loadSettings": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      },
+      "observer": {
+        "ms": 0,
+        "calls": 9,
+        "maxMs": 0
+      },
+      "pageIsAlreadyDark": {
+        "ms": 114.00000000000003,
+        "calls": 2,
+        "maxMs": 64
+      },
+      "checkDark": {
+        "ms": 126,
+        "calls": 2,
+        "maxMs": 68
+      },
+      "hasUrlBackground": {
+        "ms": 141.99999999999997,
+        "calls": 35526,
+        "maxMs": 128
+      },
+      "bgTooBig": {
+        "ms": 1,
+        "calls": 2618,
+        "maxMs": 1
+      },
+      "bgSlice": {
+        "ms": 153.99999999999903,
+        "calls": 6,
+        "maxMs": 128
+      }
+    }
+  }
+}

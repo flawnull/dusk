@@ -270,7 +270,7 @@ test.describe("css rules parse in WebKit", () => {
     // WebKit 26 keeps the prefixed rule but serializes it as :fullscreen
     // (alias), so both fullscreen rules show up as :fullscreen.
     expect(selectors.filter((s) => /full-?screen/.test(s)).length).toBeGreaterThanOrEqual(2);
-    expect(selectors.some((s) => s.includes(":is("))).toBe(true);
+    expect(selectors.some((s) => s.includes("[data-dusk-bg] img"))).toBe(true);
   });
 
   test("modal dialog and popover get the page filter", async ({ page }) => {

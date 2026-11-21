@@ -1,0 +1,546 @@
+{
+  "heavy/none": {
+    "dcl": 26.000000000000004,
+    "load": 112,
+    "worstFrame": 306,
+    "over50": 1,
+    "overlay": null,
+    "avatarsMarked": null,
+    "meMarked": null,
+    "duskTotal": 0,
+    "recalc": 31,
+    "moRecords": 0,
+    "retainedNow": null,
+    "retainedLater": null,
+    "elements": 30616,
+    "marked": 0,
+    "breakdown": {}
+  },
+  "heavy/on": {
+    "dcl": 30,
+    "load": 118.00000000000001,
+    "worstFrame": 318,
+    "over50": 1,
+    "overlay": null,
+    "avatarsMarked": null,
+    "meMarked": 76.00000000000006,
+    "duskTotal": 30.00000000000003,
+    "recalc": 33,
+    "moRecords": 17,
+    "retainedNow": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 1,
+      "recheckDetached": 0
+    },
+    "retainedLater": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 0,
+      "recheckDetached": 0
+    },
+    "elements": 30617,
+    "marked": 2402,
+    "breakdown": {
+      "apply": {
+        "ms": 0,
+        "calls": 8,
+        "maxMs": 0
+      },
+      "render": {
+        "ms": 0,
+        "calls": 8,
+        "maxMs": 0
+      },
+      "loadSettings": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      },
+      "observer": {
+        "ms": 1,
+        "calls": 9,
+        "maxMs": 1
+      },
+      "pageIsAlreadyDark": {
+        "ms": 3,
+        "calls": 2,
+        "maxMs": 1.9999999999999858
+      },
+      "checkDark": {
+        "ms": 3,
+        "calls": 2,
+        "maxMs": 1.9999999999999858
+      },
+      "hasUrlBackground": {
+        "ms": 14.000000000000028,
+        "calls": 33428,
+        "maxMs": 1
+      },
+      "measureAndMark": {
+        "ms": 0,
+        "calls": 7,
+        "maxMs": 0
+      },
+      "bgSlice": {
+        "ms": 25.00000000000003,
+        "calls": 7,
+        "maxMs": 5.000000000000028
+      },
+      "sizer": {
+        "ms": 1,
+        "calls": 6,
+        "maxMs": 1
+      }
+    }
+  },
+  "heavy/off": {
+    "dcl": 29,
+    "load": 112,
+    "worstFrame": 299,
+    "over50": 1,
+    "overlay": null,
+    "avatarsMarked": null,
+    "meMarked": null,
+    "duskTotal": 0,
+    "recalc": 31,
+    "moRecords": 2,
+    "retainedNow": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 0,
+      "recheckDetached": 0
+    },
+    "retainedLater": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 0,
+      "recheckDetached": 0
+    },
+    "elements": 30617,
+    "marked": 0,
+    "breakdown": {
+      "apply": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      },
+      "render": {
+        "ms": 0,
+        "calls": 5,
+        "maxMs": 0
+      },
+      "loadSettings": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      },
+      "remove": {
+        "ms": 0,
+        "calls": 4,
+        "maxMs": 0
+      },
+      "observer": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      }
+    }
+  },
+  "storm/none": {
+    "dcl": 24,
+    "load": 110,
+    "worstFrame": 257,
+    "over50": 1,
+    "overlay": 24.000000000000227,
+    "avatarsMarked": null,
+    "meMarked": null,
+    "duskTotal": 0,
+    "recalc": 28,
+    "moRecords": 0,
+    "retainedNow": null,
+    "retainedLater": null,
+    "elements": 26121,
+    "marked": 0,
+    "breakdown": {}
+  },
+  "storm/on": {
+    "dcl": 30,
+    "load": 121,
+    "worstFrame": 279,
+    "over50": 1,
+    "overlay": 28,
+    "avatarsMarked": 82,
+    "meMarked": 75,
+    "duskTotal": 49.00000000000094,
+    "recalc": 29.000000000000455,
+    "moRecords": 2745,
+    "retainedNow": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 18,
+      "recheckDetached": 2
+    },
+    "retainedLater": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 0,
+      "recheckDetached": 0
+    },
+    "elements": 26122,
+    "marked": 2072,
+    "breakdown": {
+      "apply": {
+        "ms": 0,
+        "calls": 8,
+        "maxMs": 0
+      },
+      "render": {
+        "ms": 0,
+        "calls": 8,
+        "maxMs": 0
+      },
+      "loadSettings": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      },
+      "observer": {
+        "ms": 2,
+        "calls": 387,
+        "maxMs": 1
+      },
+      "pageIsAlreadyDark": {
+        "ms": 2,
+        "calls": 2,
+        "maxMs": 1
+      },
+      "checkDark": {
+        "ms": 2.999999999999986,
+        "calls": 2,
+        "maxMs": 1.9999999999999858
+      },
+      "hasUrlBackground": {
+        "ms": 18.999999999999744,
+        "calls": 38742,
+        "maxMs": 1
+      },
+      "measureAndMark": {
+        "ms": 1.0000000000002274,
+        "calls": 179,
+        "maxMs": 1
+      },
+      "bgSlice": {
+        "ms": 40.00000000000091,
+        "calls": 179,
+        "maxMs": 5
+      },
+      "sizer": {
+        "ms": 3,
+        "calls": 42,
+        "maxMs": 1
+      }
+    }
+  },
+  "storm/off": {
+    "dcl": 29,
+    "load": 114,
+    "worstFrame": 252,
+    "over50": 1,
+    "overlay": 31,
+    "avatarsMarked": null,
+    "meMarked": null,
+    "duskTotal": 0,
+    "recalc": 27,
+    "moRecords": 2,
+    "retainedNow": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 0,
+      "recheckDetached": 0
+    },
+    "retainedLater": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 0,
+      "recheckDetached": 0
+    },
+    "elements": 26122,
+    "marked": 0,
+    "breakdown": {
+      "apply": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      },
+      "render": {
+        "ms": 0,
+        "calls": 5,
+        "maxMs": 0
+      },
+      "loadSettings": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      },
+      "remove": {
+        "ms": 0,
+        "calls": 4,
+        "maxMs": 0
+      },
+      "observer": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      }
+    }
+  },
+  "article/none": {
+    "dcl": 2,
+    "load": 5,
+    "worstFrame": 24,
+    "over50": 0,
+    "overlay": null,
+    "avatarsMarked": null,
+    "meMarked": null,
+    "duskTotal": 0,
+    "recalc": 1,
+    "moRecords": 0,
+    "retainedNow": null,
+    "retainedLater": null,
+    "elements": 141,
+    "marked": 0,
+    "breakdown": {}
+  },
+  "article/on": {
+    "dcl": 3,
+    "load": 7,
+    "worstFrame": 44,
+    "over50": 0,
+    "overlay": null,
+    "avatarsMarked": null,
+    "meMarked": null,
+    "duskTotal": 1,
+    "recalc": 1,
+    "moRecords": 12,
+    "retainedNow": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 1,
+      "recheckDetached": 0
+    },
+    "retainedLater": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 0,
+      "recheckDetached": 0
+    },
+    "elements": 142,
+    "marked": 0,
+    "breakdown": {
+      "apply": {
+        "ms": 0,
+        "calls": 8,
+        "maxMs": 0
+      },
+      "render": {
+        "ms": 0,
+        "calls": 8,
+        "maxMs": 0
+      },
+      "loadSettings": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      },
+      "observer": {
+        "ms": 0,
+        "calls": 4,
+        "maxMs": 0
+      },
+      "pageIsAlreadyDark": {
+        "ms": 0,
+        "calls": 2,
+        "maxMs": 0
+      },
+      "checkDark": {
+        "ms": 0,
+        "calls": 2,
+        "maxMs": 0
+      },
+      "hasUrlBackground": {
+        "ms": 0,
+        "calls": 130,
+        "maxMs": 0
+      },
+      "measureAndMark": {
+        "ms": 0,
+        "calls": 2,
+        "maxMs": 0
+      },
+      "bgSlice": {
+        "ms": 0,
+        "calls": 2,
+        "maxMs": 0
+      }
+    }
+  },
+  "article/off": {
+    "dcl": 3,
+    "load": 6,
+    "worstFrame": 18,
+    "over50": 0,
+    "overlay": null,
+    "avatarsMarked": null,
+    "meMarked": null,
+    "duskTotal": 0,
+    "recalc": 1,
+    "moRecords": 2,
+    "retainedNow": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 0,
+      "recheckDetached": 0
+    },
+    "retainedLater": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 0,
+      "recheckDetached": 0
+    },
+    "elements": 142,
+    "marked": 0,
+    "breakdown": {
+      "apply": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      },
+      "render": {
+        "ms": 0,
+        "calls": 5,
+        "maxMs": 0
+      },
+      "loadSettings": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      },
+      "remove": {
+        "ms": 0,
+        "calls": 4,
+        "maxMs": 0
+      },
+      "observer": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      }
+    }
+  },
+  "scroll/none": {
+    "dcl": 25,
+    "load": 109,
+    "worstFrame": 296,
+    "over50": 1,
+    "overlay": null,
+    "avatarsMarked": null,
+    "meMarked": null,
+    "duskTotal": 0,
+    "recalc": 30,
+    "moRecords": 0,
+    "retainedNow": null,
+    "retainedLater": null,
+    "elements": 30616,
+    "marked": 0,
+    "scroll": {
+      "avg": 16.666666666666668,
+      "p95": 17,
+      "max": 18
+    },
+    "breakdown": {}
+  },
+  "scroll/on": {
+    "dcl": 30,
+    "load": 119.00000000000001,
+    "worstFrame": 300,
+    "over50": 1,
+    "overlay": null,
+    "avatarsMarked": null,
+    "meMarked": 70.00000000000006,
+    "duskTotal": 32,
+    "recalc": 32,
+    "moRecords": 17,
+    "retainedNow": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 1,
+      "recheckDetached": 0
+    },
+    "retainedLater": {
+      "queue": 0,
+      "queueDetached": 0,
+      "recheck": 0,
+      "recheckDetached": 0
+    },
+    "elements": 30617,
+    "marked": 2402,
+    "scroll": {
+      "avg": 16.666666666666668,
+      "p95": 18,
+      "max": 22
+    },
+    "breakdown": {
+      "apply": {
+        "ms": 0,
+        "calls": 8,
+        "maxMs": 0
+      },
+      "render": {
+        "ms": 0,
+        "calls": 8,
+        "maxMs": 0
+      },
+      "loadSettings": {
+        "ms": 0,
+        "calls": 1,
+        "maxMs": 0
+      },
+      "observer": {
+        "ms": 1,
+        "calls": 9,
+        "maxMs": 1
+      },
+      "pageIsAlreadyDark": {
+        "ms": 2,
+        "calls": 2,
+        "maxMs": 1
+      },
+      "checkDark": {
+        "ms": 2,
+        "calls": 2,
+        "maxMs": 1
+      },
+      "hasUrlBackground": {
+        "ms": 12.000000000000028,
+        "calls": 33493,
+        "maxMs": 1
+      },
+      "measureAndMark": {
+        "ms": 0,
+        "calls": 7,
+        "maxMs": 0
+      },
+      "bgSlice": {
+        "ms": 25,
+        "calls": 7,
+        "maxMs": 5.999999999999972
+      },
+      "sizer": {
+        "ms": 2.0000000000000284,
+        "calls": 6,
+        "maxMs": 1
+      }
+    }
+  }
+}

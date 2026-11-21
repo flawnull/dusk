@@ -1,0 +1,25 @@
+
+Median of 5 runs, WebKit headless. Times in ms.
+scenario/cond     DCL    load  worstFrm >50ms overlay avatars  me   duskTotal recalc moRecs  marked  retained(now->later)
+heavy/none         29.0   120.0    306.0     1       -       -     -        0.0   35.0       0       0   - -> -
+heavy/on          185.0   242.0    338.0     3       -       -  53.0      144.0   39.0      17    2402   0q/1r det 0 -> 0q/0r det 0
+heavy/off         133.0   133.0    318.0     1       -       -     -        8.0   34.0       2       0   0q/0r det 0 -> 0q/0r det 0
+storm/none         32.0   134.0    298.0     1    27.0       -     -        0.0   32.0       0       0   - -> -
+storm/on          210.0   277.0    343.0     3    23.0    24.0  51.0      195.0   36.0    2600    2072   0q/1r det 0 -> 0q/0r det 0
+storm/off         115.0   116.0    279.0     2    27.0       -     -        7.0   31.0       2       0   0q/0r det 0 -> 0q/0r det 0
+article/none        3.0     6.0     24.0     0       -       -     -        0.0    0.0       0       0   - -> -
+article/on          6.0     8.0     32.0     0       -       -     -        4.0    1.0      12       0   0q/1r det 0 -> 0q/0r det 0
+article/off         7.0     8.0     25.0     0       -       -     -        4.0    0.0       2       0   0q/0r det 0 -> 0q/0r det 0
+scroll/none        25.0   110.0    299.0     2       -       -     -        0.0   31.0       0       0   - -> -
+                  scroll frame gap avg 16.7 p95 18.0 max 18.0
+scroll/on          99.0   170.0    304.0     2       -       -  22.0      279.0   33.0      17    2402   0q/1r det 0 -> 0q/0r det 0
+                  scroll frame gap avg 16.7 p95 18.0 max 22.0
+
+Dusk breakdown (median ms / calls / worst single call):
+  heavy/on apply 0.0/6/0.0, render 0.0/6/0.0, loadSettings 0.0/1/0.0, observer 0.0/9/0.0, pageIsAlreadyDark 102.0/2/57.0, checkDark 117.0/2/65.0, hasUrlBackground 15.0/35456/1.0, bgTooBig 0.0/2548/0.0, bgSlice 27.0/6/7.0
+  heavy/off apply 0.0/1/0.0, render 1.0/5/1.0, loadSettings 0.0/1/0.0, remove 0.0/4/0.0, observer 0.0/1/0.0, pageIsAlreadyDark 7.0/2/5.0, checkDark 7.0/2/5.0
+  storm/on apply 0.0/6/0.0, render 1.0/6/1.0, loadSettings 0.0/1/0.0, observer 2.0/368/1.0, pageIsAlreadyDark 121.0/2/69.0, checkDark 140.0/2/83.0, hasUrlBackground 25.0/41081/1.0, bgTooBig 4.0/2907/2.0, bgSlice 51.0/63/7.0
+  storm/off apply 0.0/1/0.0, render 1.0/5/1.0, loadSettings 0.0/1/0.0, remove 1.0/4/1.0, observer 0.0/1/0.0, pageIsAlreadyDark 6.0/2/5.0, checkDark 6.0/2/5.0
+  article/on apply 0.0/6/0.0, render 0.0/6/0.0, loadSettings 0.0/1/0.0, observer 0.0/4/0.0, pageIsAlreadyDark 3.0/2/3.0, checkDark 3.0/2/3.0, hasUrlBackground 0.0/135/0.0, bgSlice 1.0/2/1.0
+  article/off apply 0.0/1/0.0, render 1.0/5/1.0, loadSettings 0.0/1/0.0, remove 1.0/4/1.0, observer 1.0/1/1.0, pageIsAlreadyDark 3.0/2/3.0, checkDark 3.0/2/3.0
+  scroll/on apply 0.0/6/0.0, render 0.0/6/0.0, loadSettings 0.0/1/0.0, observer 0.0/9/0.0, pageIsAlreadyDark 114.0/2/64.0, checkDark 126.0/2/68.0, hasUrlBackground 142.0/35526/128.0, bgTooBig 1.0/2618/1.0, bgSlice 154.0/6/128.0

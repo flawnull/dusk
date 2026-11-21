@@ -8,10 +8,10 @@ const { openPage, setSettings } = require("../helpers");
 const PAGE = `<!doctype html><html><head><style>
   body { margin: 0; background: #fff; }
   #c { position: absolute; left: 20px; top: 20px; width: 200px; height: 200px; }
-  #t { position: absolute; left: 300px; top: 20px; width: 200px; height: 200px; background: #000; }
+  #t { position: absolute; left: 300px; top: 20px; width: 200px; height: 200px; background: #333; }
 </style></head><body>
   <canvas id="c" width="200" height="200"></canvas>
-  <div id="t"></div><!-- black block: renders light, like text does -->
+  <div id="t"></div><!-- dark gray block: renders light, like text does (pure black blocks are kept dark) -->
   <script>
     const g = document.getElementById("c").getContext("2d");
     g.fillStyle = "#fff"; g.fillRect(0, 0, 200, 200);

@@ -1,94 +1,140 @@
-# Dusk
+<div align="center">
 
-A free, small dark mode extension for Safari on macOS.
+# ☾ Dusk
 
-I built it because the free Safari dark mode extensions I tried kept crashing Safari when switching apps. Dusk does almost nothing at runtime, which is the point.
+**A dark mode for Safari that knows the difference between a page and a photograph.**
+
+![Safari](https://img.shields.io/badge/Safari-15.4%2B-1c1c1e?style=flat-square&logo=safari&logoColor=9aa5ff)
+![Manifest](https://img.shields.io/badge/manifest-v3-1c1c1e?style=flat-square)
+![Network](https://img.shields.io/badge/network_requests-0-1c1c1e?style=flat-square)
+![Tests](https://img.shields.io/badge/WebKit_tests-222_passing-1c1c1e?style=flat-square)
+![License](https://img.shields.io/badge/license-MIT-1c1c1e?style=flat-square)
+
+<img src="docs/before-after.png" alt="A light article page on the left and the same page darkened by Dusk on the right, with the sunset photo keeping its colors" width="860">
+
+</div>
+
+---
+
+## The short version
+
+I wanted a dark mode for Safari that does not crash, track or phone home. The free ones I tried kept crashing Safari when I switched apps. So I wrote one that does almost nothing at runtime: the browser's own rendering engine does the work, and Dusk only tells it what to skip.
+
+## Spec sheet
+
+| | |
+|---|---|
+| **Engine** | One CSS filter on `<html>`. No DOM rewriting, no per-element colour maths. |
+| **Photos** | Re-inverted with an exact inverse, so they keep their real colours at every intensity. |
+| **Already-dark sites** | Detected and left alone (9 on-screen samples, two thirds must agree). |
+| **Speed** | Page load within about 10 ms of no extension. Dusk off for a site costs about 1 ms. |
+| **Privacy** | No network, no background script, no page content read. Two permissions: `storage`, `activeTab`. |
+| **Size** | About 1,100 lines including the popup, most of it comments. |
+
+## The toolbar menu
+
+<img src="docs/popup.png" alt="Dusk's toolbar menu: status line, dark mode switch, follow macOS switch, per-site Auto Always Off, intensity, warmth and dim images" width="260" align="right">
+
+Click the Dusk button in Safari's toolbar. Every change applies to open tabs at once.
+
+- **Status:** what Dusk is doing on this page, and why.
+- **Dark mode:** the main switch.
+- **Only when my Mac is dark:** follows macOS appearance, live.
+- **This site:** *Auto* darkens unless the site is already dark. *Always* and *Off* override it.
+- **Intensity:** soft gray to near black.
+- **Warmth:** a sepia tint for late reading.
+- **Dim images:** photos at 80% so they do not glare.
+
+No button? **View › Customize Toolbar** and drag Dusk in.
+
+<br clear="right">
 
 ## How it works
 
-Dusk adds one stylesheet to each page. Safari injects it as an extension stylesheet, so a site's Content-Security-Policy cannot block it. It inverts the page colors with a CSS filter, then flips images, video, canvas and iframes back so they look normal. Media is re-inverted with a matching contrast correction, so photos keep their real colors at every intensity. Pages that already have a dark background are left alone: Dusk samples what is actually painted on screen, not just `<body>`.
+The page is inverted with one filter, and every picture is flipped back:
 
-Background images set from a site's stylesheet cannot be matched by CSS alone, so Dusk finds them in idle time: a few milliseconds at a time, reading computed styles once per element, and only new elements after that. There is no background script, and when Dusk is off for a page it does no work at all. Safari's rendering engine does the rest, so nothing keeps running when you switch apps.
+```css
+html  { filter: invert(a) hue-rotate(180deg); }               /* the page  */
+img   { filter: invert(1) contrast(1 / (2a − 1)) hue-rotate(180deg); }  /* photos */
+```
 
-## Privacy
+`invert(a)` maps a colour *x* to *a + (1 − 2a)·x*. A plain `invert(1)` on photos only cancels that when *a* is exactly 1, so most dark-mode filters leave photos washed out. `invert(1)` followed by `contrast(1 / (2a − 1))` is the exact inverse at any intensity, so grays, skin tones, black and white come back unchanged.
 
-- No network requests. The code never calls `fetch`, `XMLHttpRequest` or anything similar.
-- No access to screen, tabs history, cookies, keystrokes or page content.
-- Permissions: `storage` (your settings) and `activeTab` (so the popup can show the current site name).
-- The whole extension is about 600 lines, including comments. Read it in [`extension/`](extension/).
+CSS cannot see everything that is a picture, so a small scanner fills the gaps. It runs in 5 ms slices right after a frame is painted, so it never competes with the page:
 
-## Install (needs Xcode, free)
+| Mark | What it catches |
+|---|---|
+| `data-dusk-bg` | Photo backgrounds set from a stylesheet, including lazy-loaded avatars that get their photo later. |
+| `data-dusk-keep` | Blocks that were already black on the page, so they do not turn into white slabs. |
+| `data-dusk-scrim` | Translucent overlays behind modals, so they dim instead of turning into a milky veil. |
+| `data-dusk-pb/pa` | Photos drawn by `::before` and `::after`. |
 
-Safari only loads extensions that live inside a Mac app, so you build a tiny wrapper app once.
+Open shadow DOM gets the same rules through one shared constructed stylesheet. SVG logos and icons are left inverted with the text, because they are usually one dark colour and would vanish otherwise.
 
-1. Install Xcode from the App Store and open it once.
-2. Clone this repo and run the build script:
+## Numbers
 
-   ```bash
-   git clone <this repo url> dusk
-   ```
+Measured in WebKit, Safari's engine, median of 5 runs. The heavy page has 30,000 elements and 2,400 background images.
 
-   ```bash
-   cd dusk && ./build-mac.sh
-   ```
+| | No Dusk | Dusk 1.3 | **Dusk 1.4** |
+|---|---|---|---|
+| Heavy page: `DOMContentLoaded` | 25 ms | 185 ms | **30 ms** |
+| Heavy page: Dusk's own main-thread time | – | 144 ms | **48 ms** |
+| Page under 1,000 mutations a second: Dusk's time | – | 195 ms | **74 ms** |
+| Slowest single slice | – | 128 ms | **6 ms** |
+| Dusk off for the site | – | 8 ms | **≤ 1 ms** |
 
-3. Xcode opens. Click the **Dusk** project in the sidebar, then for both the **Dusk** and **Dusk Extension** targets go to **Signing & Capabilities** and set **Team** to your Apple ID (Xcode > Settings > Accounts to add it; a free account works).
-4. Press **Cmd+R**. A small Dusk window opens. You can close it.
+The test suite runs Dusk in real WebKit:
 
-   Skip steps 3 and 4 next time by passing your team ID: `TEAM=ABCDE12345 ./build-mac.sh` builds, signs and launches the app. Find your team ID with `./build-mac.sh --teams`. Free Apple ID signing expires after about 7 days; run the script again to renew.
-5. In Safari: **Settings > Extensions**, tick **Dusk**, and allow it on all websites.
+- 222 tests, run 3× in CI-style passes with no flakes
+- about 4,700 generated cases (every CSS colour syntax checked against a canvas, random settings, random DOM trees up to 5,000 wide or 2,000 deep)
+- pixel checks on 44 tricky layouts: shadow DOM, lazy avatars, SVG photos, fullscreen video, modal dialogs
+- hostile pages that fight back: removing Dusk's attribute in a loop, replacing `<html>`, strict CSP, 100,000 elements, broken storage
+- a visual pass over 33 real sites, comparing screenshots with and without Dusk
 
-If Dusk does not show up in step 5, enable **Safari > Settings > Advanced > Show features for web developers**, then **Develop > Allow Unsigned Extensions**. With a free Apple ID team this is usually not needed. With "Sign to Run Locally" Safari resets that option on every launch, so pick your Apple ID team.
+```bash
+cd tests && npm install && npx playwright install webkit
+npx playwright test        # the suite
+npm run perf               # the benchmark above
+npm run visual             # real-site screenshots, before and after
+```
 
-## Use
+## Install
 
-Click the Dusk button in the Safari toolbar. If you do not see it, choose **View > Customize Toolbar** and drag Dusk onto the toolbar.
+Safari loads extensions only from inside a Mac app, so you build a tiny wrapper once. You need Xcode (free) and an Apple ID.
 
-- **Dark mode**: global on/off.
-- **Status line**: what Dusk is doing on this page, for example "This site is already dark".
-- **Only when my Mac is dark**: follow the macOS appearance and switch live with it.
-- **This site**: **Auto** (darken unless already dark), **Always** (for sites Dusk wrongly thinks are dark) or **Off**.
-- **Intensity**: 50% to 100%. Lower is softer gray, higher is closer to black.
-- **Warmth**: a sepia tint for night reading, mostly visible on text.
-- **Dim images**: tones photos down to 80% brightness so they do not glare on a dark page.
+```bash
+git clone https://github.com/flawnull/dusk && cd dusk
+./build-mac.sh --teams                 # shows your team ID
+TEAM=ABCDE12345 ./build-mac.sh         # builds, signs, registers with Safari
+```
 
-Every change applies to open tabs right away. No need to open Safari Settings.
+Then **Safari › Settings › Extensions**, tick **Dusk**, and allow it on all websites. Rebuilding later updates Dusk in place: no app window, nothing to click. Free Apple ID signing lasts about 7 days, so run the build again to renew.
 
-## No-Xcode option
+Without `TEAM`, the script opens the project in Xcode instead: pick your team under *Signing & Capabilities* and press ⌘R.
 
-Safari can apply one custom stylesheet to every site with no extension at all.
+**No Xcode?** Point **Safari › Settings › Advanced › Style sheet** at [`stylesheet-fallback/dusk.css`](stylesheet-fallback/dusk.css). It has no menu and no dark-site detection, but it cannot break anything either.
 
-**Safari > Settings > Advanced > Style sheet > Other...** and pick [`stylesheet-fallback/dusk.css`](stylesheet-fallback/dusk.css).
+## Known limits
 
-It cannot detect already-dark sites or be turned off per site, but it cannot crash anything either.
+Each of these has a test that documents it.
+
+- **Very saturated colours come back duller.** Pure red returns as about (172, 63, 63). Any filter that keeps page hues right has this limit.
+- **Emoji are text**, so they are inverted with the page.
+- **Images larger than half the window stay inverted**, so page wallpapers stay dark. Text drawn on top of a large photo can be hard to read.
+- **Closed shadow roots** cannot be reached by any extension. Frames are not darkened from inside.
+- **List-bullet images and `border-image`** are not re-inverted.
+- **Sites can tell Dusk is on**, from the `data-dusk` attribute and the filter on `<html>`.
 
 ## Layout
 
 ```
-extension/            the web extension (manifest v3)
-  content.js          applies and removes the dark style
-  popup/              toolbar popup
-  icons/
-build-mac.sh          wraps the extension in a macOS app via Xcode
-stylesheet-fallback/  single CSS file for Safari's built-in style sheet option
-scripts/make_icons.py regenerates the icons
-tests/                WebKit test suite (Playwright)
-```
-
-## Known limits
-
-- Inversion is a filter, so a few colors shift slightly. Brand colors in logos made with CSS (not images) will look off.
-- If Dusk guesses wrong about a site being dark or light, set that site to **Always** or **Off**.
-- Elements whose background image changes later via a class change (not a new element) keep their first look until reload.
-- Fullscreen video and content show in natural colors.
-- Icons drawn as background images on `::before` / `::after` stay inverted.
-
-## Tests
-
-The content script and popup run in real WebKit (Safari's engine) through Playwright:
-
-```bash
-cd tests && npm install && npx playwright install webkit && npx playwright test
+extension/
+  content.js            switches the filter, scans for pictures, detects dark sites
+  dusk.css              the filter rules (Safari injects it, so page CSP cannot block it)
+  popup/                the toolbar menu
+build-mac.sh            wraps the extension in a macOS app and registers it
+stylesheet-fallback/    one CSS file for Safari's built-in style sheet option
+tests/                  WebKit suite, benchmark, visual QA (Playwright)
 ```
 
 ## License

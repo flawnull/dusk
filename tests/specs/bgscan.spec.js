@@ -107,6 +107,11 @@ test("nodes added after load get marked", async ({ page }) => {
 });
 
 test("2000 bg elements added at once all get marked, no slice or frame over 50 ms", async ({ page }) => {
+  // A feed: 2000 rows, about 40 on screen. Every element that newly gets a
+  // filter costs WebKit ~0.08 ms to paint once (an offscreen buffer each), so
+  // 2000 on screen at once is ~170 ms of paint whatever Dusk does; offscreen
+  // ones cost nothing until scrolled to. Frames are watched until 3 frames
+  // AFTER the last mark, so the paint of the marks is measured too.
   // Time every scanner slice (the content script passes bgSlice by name to
   // requestIdleCallback / setTimeout) before content.js runs.
   await page.addInitScript(() => {
@@ -121,7 +126,7 @@ test("2000 bg elements added at once all get marked, no slice or frame over 50 m
     if (window.requestIdleCallback) window.requestIdleCallback = wrap(window.requestIdleCallback);
     window.setTimeout = wrap(window.setTimeout);
   });
-  await openPage(page, { html: doc(`.t{width:20px;height:20px;display:inline-block;background-image:url(${IMG})}`, '<div id="root"></div>') });
+  await openPage(page, { html: doc(`.t{width:20px;height:20px;display:block;background-image:url(${IMG})}`, '<div id="root"></div>') });
   await scanDone(page);
 
   const res = await page.evaluate(async () => {
@@ -135,7 +140,7 @@ test("2000 bg elements added at once all get marked, no slice or frame over 50 m
     document.getElementById("root").appendChild(frag);
     // Watch frame gaps from the next frame on (the insertion itself is ours).
     await new Promise((r) => requestAnimationFrame(r));
-    let last = performance.now(), maxGap = 0;
+    let last = performance.now(), maxGap = 0, after = 0;
     const t0 = last;
     await new Promise((resolve) => {
       const tick = () => {
@@ -143,7 +148,8 @@ test("2000 bg elements added at once all get marked, no slice or frame over 50 m
         maxGap = Math.max(maxGap, now - last);
         last = now;
         const done = document.querySelectorAll(".t[data-dusk-bg]").length === 2000;
-        if (done || now - t0 > 8000) resolve(); else requestAnimationFrame(tick);
+        if (done) after++;
+        if (after > 3 || now - t0 > 8000) resolve(); else requestAnimationFrame(tick);
       };
       requestAnimationFrame(tick);
     });
@@ -180,7 +186,6 @@ test("toggling off then on rescans the page", async ({ page }) => {
 });
 
 test("bg image on a ::before pseudo-element is re-inverted (documented gap)", async ({ page }) => {
-  test.fail(true, "GAP content.js:176 — scanner reads only the element's own background, not ::before/::after (common for icons)");
   await openPage(page, { html: doc(`.ic::before{content:"";display:block;width:20px;height:20px;background-image:url(${IMG})}`, '<span class="ic" id="ic"></span>') });
   await scanDone(page);
   const f = await page.evaluate(() => getComputedStyle(document.getElementById("ic"), "::before").filter);
@@ -191,4 +196,57 @@ test("scanner stops (no observer work) while Dusk is off", async ({ page }) => {
   await openPage(page, { settings: { enabled: false }, html: doc(`.x{width:60px;height:60px;background-image:url(${IMG})}`, '<div id="root"><div class="x" id="pre"></div></div>') });
   await scanDone(page, 800);
   expect(await marked(page, "#pre")).toBe(false);
+});
+
+test.describe("lazy-loaded images (LinkedIn avatars)", () => {
+  test("bg image set later through the style attribute gets marked", async ({ page }) => {
+    await openPage(page, { html: doc("", '<div id="a" style="width:48px;height:48px;border-radius:50%"></div>') });
+    await scanDone(page);
+    expect(await marked(page, "#a")).toBe(false);
+    await page.evaluate((u) => { document.getElementById("a").style.backgroundImage = `url(${u})`; }, IMG);
+    await scanDone(page);
+    expect(await marked(page, "#a")).toBe(true);
+    expect(await filterOf(page, "#a")).toMatch(REINVERT);
+  });
+
+  test("bg image set later through a class change gets marked", async ({ page }) => {
+    await openPage(page, { html: doc(`.loaded{background-image:url(${IMG})}`, '<div id="a" class="ghost" style="width:48px;height:48px"></div>') });
+    await scanDone(page);
+    expect(await marked(page, "#a")).toBe(false);
+    await page.evaluate(() => { document.getElementById("a").className = "loaded"; });
+    await scanDone(page);
+    expect(await marked(page, "#a")).toBe(true);
+  });
+
+  test("an element whose bg image is removed later is unmarked", async ({ page }) => {
+    await openPage(page, { html: doc(`.photo{background-image:url(${IMG})}`, '<div id="a" class="photo" style="width:48px;height:48px"></div>') });
+    await scanDone(page);
+    expect(await marked(page, "#a")).toBe(true);
+    await page.evaluate(() => { document.getElementById("a").className = ""; });
+    await scanDone(page);
+    expect(await marked(page, "#a")).toBe(false);
+    expect(await filterOf(page, "#a")).toBe("none");
+  });
+
+  test("5000 class changes stay cheap (no slice over 50 ms)", async ({ page }) => {
+    const cells = Array.from({ length: 500 }, (_, i) => `<i id="c${i}" style="display:block;width:4px;height:4px"></i>`).join("");
+    await openPage(page, { html: doc(`.on{background-image:url(${IMG})}`, cells) });
+    await scanDone(page);
+    const worst = await page.evaluate(async () => {
+      let worst = 0, last = performance.now();
+      let running = true;
+      (function frame() { const t = performance.now(); worst = Math.max(worst, t - last); last = t; if (running) requestAnimationFrame(frame); })();
+      for (let round = 0; round < 10; round++) {
+        for (let i = 0; i < 500; i++) document.getElementById("c" + i).classList.toggle("on");
+        await new Promise((r) => setTimeout(r, 16));
+      }
+      await new Promise((r) => setTimeout(r, 800));
+      running = false;
+      return worst;
+    });
+    expect(worst).toBeLessThan(50);
+    await scanDone(page);
+    // 10 toggles: even count, so every cell ends without the class and unmarked
+    expect(await page.evaluate(() => document.querySelectorAll("[data-dusk-bg]").length)).toBe(0);
+  });
 });
