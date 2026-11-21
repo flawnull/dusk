@@ -13,3 +13,6 @@ svg image, [style*="background-image"] {
 [style*="background-image"] img, picture img {
   filter: none !important;
 }
+/* Fullscreen video escapes the page filter, so show it in natural colors. */
+:fullscreen, :fullscreen video, :fullscreen img { filter: none !important; }
+:-webkit-full-screen, :-webkit-full-screen video, :-webkit-full-screen img { filter: none !important; }

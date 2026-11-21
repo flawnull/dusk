@@ -6,7 +6,7 @@ I built it because the free Safari dark mode extensions I tried kept crashing Sa
 
 ## How it works
 
-Dusk adds one `<style>` tag to each page. It inverts the page colors with a CSS filter, then flips images, video, canvas and iframes back so they look normal. Pages that already have a dark background are left alone.
+Dusk adds one `<style>` tag to each page. It inverts the page colors with a CSS filter, then flips images, video, canvas and iframes back so they look normal. Media is re-inverted with a matching contrast correction, so photos keep their real colors at every intensity. Pages that already have a dark background are left alone: Dusk samples what is actually painted on screen, not just `<body>`.
 
 There is no DOM scanning, no `MutationObserver` watching the page, and no background script. Safari's rendering engine does all the work, so cost stays flat on heavy pages and nothing keeps running when you switch apps.
 
@@ -14,7 +14,7 @@ There is no DOM scanning, no `MutationObserver` watching the page, and no backgr
 
 - No network requests. The code never calls `fetch`, `XMLHttpRequest` or anything similar.
 - No access to screen, tabs history, cookies, keystrokes or page content.
-- Permissions: `storage` (your three settings) and `activeTab` (so the popup can show the current site name).
+- Permissions: `storage` (your settings) and `activeTab` (so the popup can show the current site name).
 - The whole extension is about 200 lines. Read it in [`extension/`](extension/).
 
 ## Install (needs Xcode, free)
@@ -34,6 +34,8 @@ Safari only loads extensions that live inside a Mac app, so you build a tiny wra
 
 3. Xcode opens. Click the **Dusk** project in the sidebar, then for both the **Dusk** and **Dusk Extension** targets go to **Signing & Capabilities** and set **Team** to your Apple ID (Xcode > Settings > Accounts to add it; a free account works).
 4. Press **Cmd+R**. A small Dusk window opens. You can close it.
+
+   Skip steps 3 and 4 next time by passing your team ID: `TEAM=ABCDE12345 ./build-mac.sh` builds, signs and launches the app. Find the ID with `security find-identity -v -p codesigning` (the code in brackets). Free Apple ID signing expires after about 7 days; run the script again to renew.
 5. In Safari: **Settings > Extensions**, tick **Dusk**, and allow it on all websites.
 
 If Dusk does not show up in step 5, enable **Safari > Settings > Advanced > Show features for web developers**, then **Develop > Allow Unsigned Extensions**. With a free Apple ID team this is usually not needed. With "Sign to Run Locally" Safari resets that option on every launch, so pick your Apple ID team.
@@ -43,7 +45,9 @@ If Dusk does not show up in step 5, enable **Safari > Settings > Advanced > Show
 Click the moon in the Safari toolbar:
 
 - **Dark mode**: global on/off.
-- **On this site**: turn Dusk off for the current site only.
+- **Status line**: what Dusk is doing on this page, for example "This site is already dark".
+- **Only when my Mac is dark**: follow the macOS appearance and switch live with it.
+- **This site**: **Auto** (darken unless already dark), **Always** (for sites Dusk wrongly thinks are dark) or **Off**.
 - **Intensity**: 50% to 100%. Lower is softer gray, higher is closer to black.
 
 ## No-Xcode option
@@ -69,7 +73,9 @@ scripts/make_icons.py regenerates the icons
 ## Known limits
 
 - Inversion is a filter, so a few colors shift slightly. Brand colors in logos made with CSS (not images) will look off.
-- Sites with a transparent background and a dark design painted by inner elements may get inverted. Turn Dusk off for that site.
+- If Dusk guesses wrong about a site being dark or light, set that site to **Always** or **Off**.
+- Background images set from a stylesheet (not inline) are inverted with the page.
+- Fullscreen video and content show in natural colors.
 
 ## License
 

@@ -10,15 +10,32 @@
     <h1>Dusk</h1>
   </header>
 
+  <p id="status" class="status" aria-live="polite"></p>
+
   <label class="row">
     <span>Dark mode</span>
     <input type="checkbox" id="enabled" class="switch">
   </label>
 
   <label class="row">
-    <span>On <b id="host">this site</b></span>
-    <input type="checkbox" id="site" class="switch">
+    <span>Only when my Mac is dark</span>
+    <input type="checkbox" id="followSystem" class="switch">
   </label>
+
+  <div class="row col" id="siteRow">
+    <span><b id="host">This site</b></span>
+    <div class="segmented" role="radiogroup" aria-label="Dusk on this site">
+      <label title="Darken unless the site is already dark">
+        <input type="radio" name="siteMode" value="auto"><span>Auto</span>
+      </label>
+      <label title="Always darken this site">
+        <input type="radio" name="siteMode" value="on"><span>Always</span>
+      </label>
+      <label title="Never darken this site">
+        <input type="radio" name="siteMode" value="off"><span>Off</span>
+      </label>
+    </div>
+  </div>
 
   <label class="row col">
     <span>Intensity <output id="intensityValue"></output></span>
