@@ -273,11 +273,11 @@
     'input[type="image" i]', "[data-dusk-bg]", "[data-dusk-keep]"];
   const MEDIA_F = "brightness(var(--dusk-img, 1)) invert(1) contrast(var(--dusk-c, 1.19)) hue-rotate(180deg)";
   const SHADOW_CSS = [
-    `${MEDIA_SEL.join(", ")} { filter: ${MEDIA_F} !important; }`,
-    `svg:has(image) { filter: ${MEDIA_F} !important; }`,
+    `${MEDIA_SEL.join(", ")} { filter: ${MEDIA_F} !important; will-change: filter !important; }`,
+    `svg:has(image) { filter: ${MEDIA_F} !important; will-change: filter !important; }`,
     `img[src*=".svg" i], img[src^="data:image/svg" i] { filter: none !important; }`,
     `${["[data-dusk-bg]", "[data-dusk-keep]"].flatMap((b) => MEDIA_SEL.map((m) => `${b} ${m}`)).join(", ")}, picture img { filter: none !important; }`,
-    `[data-dusk-pb]::before, [data-dusk-pa]::after { filter: ${MEDIA_F} !important; }`,
+    `[data-dusk-pb]::before, [data-dusk-pa]::after { filter: ${MEDIA_F} !important; will-change: filter !important; }`,
   ];
   let shadowSheet = null;
   let shadowOn = false;

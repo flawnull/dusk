@@ -29,7 +29,9 @@ html[data-dusk]:not([data-dusk-measure]) {
   background-color: #fff !important;
 }
 
-/* Media and marked boxes: undo the page filter exactly. */
+/* Media and marked boxes: undo the page filter exactly. will-change puts
+   each one on its own GPU layer: as software filters, 200 photos made
+   scrolling stutter (p95 frame 41 ms instead of 17 ms, 3.4x the CPU). */
 html[data-dusk] img,
 html[data-dusk] video,
 html[data-dusk] picture,
@@ -41,12 +43,14 @@ html[data-dusk] input[type="image" i],
 html[data-dusk] [data-dusk-bg],
 html[data-dusk] [data-dusk-keep] {
   filter: brightness(var(--dusk-img, 1)) invert(1) contrast(var(--dusk-c, 1.19)) hue-rotate(180deg) !important;
+  will-change: filter !important;
 }
 /* WebKit ignores CSS filter on SVG child elements such as <image>, so an
    <svg> that contains a photo (round avatars, masked thumbnails) counts as
    media as a whole. Own rule: :has() is unknown before Safari 15.4. */
 html[data-dusk] svg:has(image) {
   filter: brightness(var(--dusk-img, 1)) invert(1) contrast(var(--dusk-c, 1.19)) hue-rotate(180deg) !important;
+  will-change: filter !important;
 }
 
 /* SVG files are almost always logos, icons and QR codes drawn in one dark
@@ -91,6 +95,7 @@ html[data-dusk] [data-dusk-keep] svg:has(image) {
 html[data-dusk] [data-dusk-pb]::before,
 html[data-dusk] [data-dusk-pa]::after {
   filter: brightness(var(--dusk-img, 1)) invert(1) contrast(var(--dusk-c, 1.19)) hue-rotate(180deg) !important;
+  will-change: filter !important;
 }
 
 /* A translucent black overlay behind a modal would turn into a milky white

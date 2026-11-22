@@ -9,6 +9,7 @@ html {
 img, video, picture, canvas, iframe, embed, object,
 svg image, [style*="background-image"] {
   filter: invert(1) hue-rotate(180deg) !important;
+  will-change: filter; /* GPU layer each: software filters make scrolling stutter */
 }
 [style*="background-image"] img, picture img {
   filter: none !important;
