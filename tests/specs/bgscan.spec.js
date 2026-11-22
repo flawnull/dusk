@@ -16,7 +16,10 @@ async function scanDone(page, ms = 2500) {
     while (performance.now() - t0 < limit) {
       await new Promise((r) => setTimeout(r, 60));
       const n = document.querySelectorAll("[data-dusk-bg]").length;
-      if (n === last) { if (++stable >= 4) return; } else { stable = 0; last = n; }
+      // Nothing marked yet may just mean the scanner has not run (it starts
+      // after a paint and waits for an IntersectionObserver): under CPU load
+      // that can take longer than 4 polls, so "still 0" must hold longer.
+      if (n === last) { if (++stable >= (n === 0 ? 8 : 4)) return; } else { stable = 0; last = n; }
     }
   }, ms);
 }
