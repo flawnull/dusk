@@ -81,6 +81,16 @@ test.describe("intensity mapping", () => {
 });
 
 test.describe("already-dark detection", () => {
+  // Medium's blog: a black newsletter box 90% wide fills the middle of the
+  // screen, but the page itself is white and so are its margins.
+  test("a light page with a big dark promo box is still darkened", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await openPage(page, { html: page100(
+      "body{margin:0;background:#fff}header{height:280px}.promo{margin:0 64px;height:620px;background:#000;color:#fff}",
+      "<header>Blog</header><div class=promo>Get the best of it weekly</div>") });
+    expect(await duskState(page)).toBe("active");
+  });
+
   const dark = [
     ["dark body filling the viewport", page100("body{margin:0;min-height:100vh;background:#111;color:#eee}")],
     ["transparent body + dark wrapper div", page100("body{margin:0}#app{min-height:100vh;background:#121212}", '<div id="app">x</div>')],

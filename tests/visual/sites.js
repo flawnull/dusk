@@ -34,5 +34,7 @@ module.exports = [
   { name: "linear-dark", url: "https://linear.app/", dark: true },
   { name: "netflix-dark", url: "https://www.netflix.com/", dark: true },
   { name: "github-docs-systemdark", url: "https://docs.github.com/en", dark: true, scheme: "dark" },
+  { name: "instagram-systemdark", url: "https://www.instagram.com/apple/", dark: true, scheme: "dark" },
+  { name: "youtube-systemdark", url: "https://www.youtube.com/", dark: true, scheme: "dark" },
   { name: "mdn-systemdark", url: "https://developer.mozilla.org/en-US/docs/Web/CSS/filter", dark: true, scheme: "dark" },
 ];

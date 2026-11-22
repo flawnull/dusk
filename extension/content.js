@@ -185,14 +185,17 @@
     if (meta && /^\s*(only\s+)?dark\s*$/i.test(meta.content)) return true;
 
     // Sample what is actually painted, not just <body>: many dark sites keep
-    // <body> transparent and paint the background on a wrapper element. Nine
-    // points, and two thirds must agree, so one dark hero or promo box on a
-    // light site does not switch Dusk off for the whole site.
+    // <body> transparent and paint the background on a wrapper element. Three
+    // rows of five points, and two thirds must agree, so one dark hero or
+    // promo box on a light site does not switch Dusk off for the whole site.
+    // The outer columns sit in the page margins: a dark site paints edge to
+    // edge, a light site with a big dark box (Medium's newsletter banner)
+    // leaves them light.
     const w = innerWidth, h = innerHeight;
     if (w > 0 && h > 0) {
       let dark = 0, total = 0;
       const canvas = canvasLum();
-      for (const fx of [0.2, 0.5, 0.8]) {
+      for (const fx of [0.03, 0.2, 0.5, 0.8, 0.97]) {
         for (const fy of [0.2, 0.5, 0.8]) {
           const el = document.elementFromPoint(w * fx, h * fy);
           let lum = el ? backgroundAt(el) : null;
