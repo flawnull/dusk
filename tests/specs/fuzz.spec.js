@@ -294,9 +294,7 @@ async function scanTree(page, spec) {
   }, spec);
   const ms = await scannerIdle(page, 60000);
   const result = await page.evaluate(() => {
-    // Measure the layout the page would have without Dusk: Dusk's own
-    // re-invert filters change the containing block of position:fixed
-    // descendants (covered separately in hostile.spec.js).
+    // Measure the layout the page would have without Dusk.
     const de = document.documentElement;
     de.removeAttribute("data-dusk");
     const vp = innerWidth * innerHeight;
@@ -309,11 +307,10 @@ async function scanTree(page, spec) {
         bi !== "none" && bi.includes("url(") && !(r.width * r.height > 0.5 * vp) &&
         // A photo box holds at most 40 elements; more is a content box with a
         // textured background, left inverted with the page.
-        el.getElementsByTagName("*").length <= 40;
+        el.getElementsByTagName("*").length <= 40 &&
+        // A filter would trap position:fixed descendants inside the box.
+        ![...el.getElementsByTagName("*")].some((k) => getComputedStyle(k).position === "fixed");
       const is = el.hasAttribute("data-dusk-bg");
-      // position:fixed under a marked ancestor: its size depends on Dusk's own
-      // filter (the fixed-containing-block bug in hostile.spec.js). Skip here.
-      if (getComputedStyle(el).position === "fixed" && el.parentElement && el.parentElement.closest("[data-dusk-bg]")) { skipped++; continue; }
       if (should) expected++;
       if (is) marked++;
       if (should !== is && wrong.length < 5) wrong.push({ tag: el.tagName, kind: el.dataset.kind, should, is, area: Math.round(r.width * r.height) });

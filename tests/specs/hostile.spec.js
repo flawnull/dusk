@@ -39,15 +39,16 @@ const isDark = (rgb) => rgb.every((v) => v < 80);
 
 test.describe("re-inverted containers (quality)", () => {
   test("position:fixed child of a background-image container stays where the page put it", async ({ page }) => {
-    test.fail(true, "BUG: dusk.css [data-dusk-bg] filter makes the marked element the containing block for position:fixed descendants (filter != none). A fixed widget/modal/navbar inside a container with a url() background jumps into that container and gets clipped. Repro: .hero{background:url(..)} > .chat{position:fixed;right:0;bottom:0}. Fix: in content.js, mark only leaf-like elements (no element children, or no descendant that is position:fixed/sticky/absolute and no text), or re-invert via a ::before overlay instead of filtering the element.");
+    // A filter makes the element the containing block for fixed descendants,
+    // so such a container is left unmarked: the widget stays in its corner.
     const body = `<!doctype html><head><style>
       body{margin:0;background:#fff}
       .hero{position:relative;width:300px;height:200px;margin:40px;background-image:url(${IMG})}
-      .chat{position:fixed;right:0;bottom:0;width:120px;height:60px;background:#fff;border:1px solid #000}
-    </style></head><body><div class="hero" id="h"><div class="chat" id="c">Messaging</div></div></body>`;
+      .chat{position:fixed;right:0;bottom:0;width:48px;height:48px;border:1px solid #000;border-radius:50%}
+    </style></head><body><div class="hero" id="h"><div class="chat" id="c"></div></div></body>`;
     await open(page, { body });
     await scannerIdle(page);
-    expect(await page.evaluate(() => document.getElementById("h").hasAttribute("data-dusk-bg"))).toBe(true);
+    expect(await page.evaluate(() => document.getElementById("h").hasAttribute("data-dusk-bg"))).toBe(false);
     const r = await page.evaluate(() => {
       const b = document.getElementById("c").getBoundingClientRect();
       return { right: Math.round(innerWidth - b.right), bottom: Math.round(innerHeight - b.bottom) };

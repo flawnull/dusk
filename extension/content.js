@@ -425,6 +425,9 @@
   function photoLike(el) {
     const kids = el.getElementsByTagName("*");
     if (kids.length > DESC_LIMIT) return false;
+    // A filter makes the element the containing block for position:fixed
+    // descendants: a fixed button or widget inside would jump into the box.
+    for (const k of kids) if (getComputedStyle(k).position === "fixed") return false;
     const w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
     let chars = 0;
     for (let t = w.nextNode(); t; t = w.nextNode()) {
