@@ -155,10 +155,25 @@
     return lum;
   }
 
+  // The page's own <html> background. dusk.css forces it white, and
+  // data-dusk-measure switches that one rule off for a moment. Changing <html>
+  // while the filter is on can restyle the whole page in WebKit (about 60 ms
+  // on MDN), so it is read only when a sample actually reaches <html>, and at
+  // most once per check.
+  let rootLum; // per check; undefined = not read yet
+  function rootBackground() {
+    if (rootLum !== undefined) return rootLum;
+    const de = document.documentElement;
+    const on = de.hasAttribute(ATTR);
+    if (on) de.setAttribute(MEASURE, "");
+    try { rootLum = ownBackground(de); } finally { if (on) de.removeAttribute(MEASURE); }
+    return rootLum;
+  }
+
   // Background of an element, or of the nearest ancestor that paints one.
   function backgroundAt(el) {
     for (; el && el.nodeType === 1; el = el.parentElement) {
-      let lum = ownBackground(el);
+      let lum = el === document.documentElement ? rootBackground() : ownBackground(el);
       // A transparent <html> shows the <body> background on the whole canvas,
       // even below a short body.
       if (lum === null && el === document.documentElement && document.body) {
@@ -179,8 +194,8 @@
   }
 
   // A site that is already dark should be left alone, or Dusk would turn it light.
-  // Call only with data-dusk-measure set: dusk.css otherwise forces <html> to white.
   function pageIsAlreadyDark() {
+    rootLum = undefined;
     const meta = document.querySelector('meta[name="color-scheme"]');
     if (meta && /^\s*(only\s+)?dark\s*$/i.test(meta.content)) return true;
 
@@ -578,7 +593,7 @@
   // after the page's own DOMContentLoaded and load handlers: that is before
   // the frame is painted, so a dark site never shows inverted, and the layout
   // it needs is the one that frame computes anyway.
-  let darkStale = true;      // siteIsDark has not been measured for this page yet
+  let darkStale = true;      // a check is due (page start, load, appearance or mode change)
   let darkScheduled = false;
 
   function needsDarkCheck() {
@@ -593,16 +608,6 @@
   const EARLY_CHECKS = [300, 800, 1600]; // ms after DOMContentLoaded
   let earlyTimers = [];
 
-  function measureDark() {
-    // Read the page's own <html> background: data-dusk-measure switches off
-    // the one rule in dusk.css that changes it. Only <html> is restyled, and
-    // it is switched back in the same task, so nothing flashes.
-    const de = document.documentElement;
-    const on = !!de && de.hasAttribute(ATTR);
-    if (on) de.setAttribute(MEASURE, "");
-    try { return pageIsAlreadyDark(); } finally { if (on) de.removeAttribute(MEASURE); }
-  }
-
   function remember(dark) {
     if (dark === rememberedDark) return;
     rememberedDark = dark;
@@ -616,9 +621,9 @@
     darkScheduled = false;
     if (!needsDarkCheck()) return; // measured later, if the site is set back to Auto
     const final = document.readyState === "complete";
-    const dark = measureDark();
+    const dark = pageIsAlreadyDark();
+    darkStale = false; // the early checks are scheduled by their own timers
     if (final) {
-      darkStale = false;
       siteIsDark = dark;
       remember(dark);
     } else if (dark) {

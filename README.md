@@ -7,7 +7,7 @@
 ![Safari](https://img.shields.io/badge/Safari-15.4%2B-1c1c1e?style=flat-square&logo=safari&logoColor=9aa5ff)
 ![Manifest](https://img.shields.io/badge/manifest-v3-1c1c1e?style=flat-square)
 ![Network](https://img.shields.io/badge/network_requests-0-1c1c1e?style=flat-square)
-![Tests](https://img.shields.io/badge/WebKit_tests-232_passing-1c1c1e?style=flat-square)
+![Tests](https://img.shields.io/badge/WebKit_tests-234_passing-1c1c1e?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-1c1c1e?style=flat-square)
 
 <img src="docs/before-after.png" alt="A light article page on the left and the same page darkened by Dusk on the right, with the sunset photo keeping its colors" width="860">
@@ -85,7 +85,7 @@ Measured in WebKit, Safari's engine, median of 5 runs. The heavy page has 30,000
 
 The test suite runs Dusk in real WebKit:
 
-- 232 tests, run 3× in CI-style passes with no flakes
+- 234 tests, run 3× in CI-style passes with no flakes
 - about 4,700 generated cases (every CSS colour syntax checked against a canvas, random settings, random DOM trees up to 5,000 wide or 2,000 deep)
 - pixel checks on 44 tricky layouts: shadow DOM, lazy avatars, SVG photos, fullscreen video, modal dialogs
 - hostile pages that fight back: removing Dusk's attribute in a loop, replacing `<html>`, strict CSP, 100,000 elements, broken storage

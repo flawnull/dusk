@@ -54,30 +54,41 @@ test("switching an Off site back to Auto runs the dark check then", async ({ pag
   expect(await duskState(page)).toBe("already-dark");
 });
 
-test("measuring <html> restyles only <html>, not the page", async ({ page }) => {
-  await openPage(page);
-  // An attribute that only <html> rules use must not invalidate descendants:
-  // check that the measure rule is the only one mentioning data-dusk-measure
-  // and that it targets html itself.
-  const rules = await page.evaluate(() => {
-    const out = [];
-    for (const sheet of document.styleSheets) {
-      try { for (const r of sheet.cssRules) if (r.selectorText && r.selectorText.includes("data-dusk-measure")) out.push(r.selectorText); } catch {}
+// Any change to <html> while the filter is on can restyle the whole page in
+// WebKit (about 60 ms on MDN). Dark-site checks run at DOMContentLoaded,
+// 0.3/0.8/1.6 s and load: a handful while a page loads, never every frame.
+const recordRootChanges = (page) => page.addInitScript(() => {
+  window.__rootChanges = [];
+  let applied = false; // everything after Dusk's first apply is recorded
+  // Watches the document, not <html>: the parser may create <html> later.
+  new MutationObserver((recs) => {
+    for (const r of recs) {
+      if (r.target !== document.documentElement) continue;
+      if (applied) window.__rootChanges.push(r.attributeName);
+      else if (r.attributeName === "data-dusk") applied = true;
     }
-    return out;
-  });
-  expect(rules).toEqual(['html[data-dusk]:not([data-dusk-measure])']);
-  // And it really reads the page's own <html> background while Dusk is on.
-  await page.evaluate(() => { document.documentElement.style.background = "rgb(17, 17, 17)"; });
-  const own = await page.evaluate(() => {
-    const de = document.documentElement;
-    de.setAttribute("data-dusk-measure", "");
-    const c = getComputedStyle(de).backgroundColor;
-    de.removeAttribute("data-dusk-measure");
-    return [c, getComputedStyle(de).backgroundColor];
-  });
-  expect(own[0]).toBe("rgb(17, 17, 17)");
-  expect(own[1]).toBe("rgb(255, 255, 255)");
+  }).observe(document, { attributes: true, subtree: true });
+});
+
+test("a slow-loading page is checked a handful of times, not every frame", async ({ page }) => {
+  await recordRootChanges(page);
+  // Light page whose only background is on <html>, so every check reads it.
+  await openPage(page, { html: doc("html{background:#fff} body{margin:0}", "<p>light</p><img src=/slow.png>"), slow: { "/slow.png": 2000 } });
+  expect(await duskState(page)).toBe("active");
+  const changes = await page.evaluate(() => window.__rootChanges.length);
+  expect(changes).toBeLessThanOrEqual(2 * 6); // set + remove, at most 6 checks
+});
+
+test("a page that paints its own background is checked without touching <html>", async ({ page }) => {
+  await recordRootChanges(page);
+  await openPage(page, { html: doc("body{margin:0;min-height:100vh;background:#fff}", "<p>light</p>") });
+  expect(await duskState(page)).toBe("active");
+  expect(await page.evaluate(() => window.__rootChanges)).toEqual([]);
+});
+
+test("the page's own <html> background is still what detection reads", async ({ page }) => {
+  await openPage(page, { html: doc("html{background:rgb(17,17,17)} body{margin:0}", "<p>dark</p>") });
+  expect(await duskState(page)).toBe("already-dark");
 });
 
 test.describe("hidden tabs", () => {
