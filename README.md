@@ -7,7 +7,7 @@
 ![Safari](https://img.shields.io/badge/Safari-15.4%2B-1c1c1e?style=flat-square&logo=safari&logoColor=9aa5ff)
 ![Manifest](https://img.shields.io/badge/manifest-v3-1c1c1e?style=flat-square)
 ![Network](https://img.shields.io/badge/network_requests-0-1c1c1e?style=flat-square)
-![Tests](https://img.shields.io/badge/WebKit_tests-222_passing-1c1c1e?style=flat-square)
+![Tests](https://img.shields.io/badge/WebKit_tests-231_passing-1c1c1e?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-1c1c1e?style=flat-square)
 
 <img src="docs/before-after.png" alt="A light article page on the left and the same page darkened by Dusk on the right, with the sunset photo keeping its colors" width="860">
@@ -26,9 +26,9 @@ I wanted a dark mode for Safari that does not crash, track or phone home. The fr
 |---|---|
 | **Engine** | One CSS filter on `<html>`. No DOM rewriting, no per-element colour maths. |
 | **Photos** | Re-inverted with an exact inverse, so they keep their real colours at every intensity. |
-| **Already-dark sites** | Detected and left alone (9 on-screen samples, two thirds must agree). |
+| **Already-dark sites** | Detected and left alone (9 on-screen samples, two thirds must agree), and remembered, so the next visit never flashes inverted. |
 | **Speed** | Page load within about 10 ms of no extension. Dusk off for a site costs about 1 ms. |
-| **Privacy** | No network, no background script, no page content read. Two permissions: `storage`, `activeTab`. |
+| **Privacy** | No network, no background script, no page content read. Stores only your settings and which sites are already dark, on your Mac. Two permissions: `storage`, `activeTab`. |
 | **Size** | About 1,100 lines including the popup, most of it comments. |
 
 ## The toolbar menu
@@ -85,7 +85,7 @@ Measured in WebKit, Safari's engine, median of 5 runs. The heavy page has 30,000
 
 The test suite runs Dusk in real WebKit:
 
-- 222 tests, run 3× in CI-style passes with no flakes
+- 231 tests, run 3× in CI-style passes with no flakes
 - about 4,700 generated cases (every CSS colour syntax checked against a canvas, random settings, random DOM trees up to 5,000 wide or 2,000 deep)
 - pixel checks on 44 tricky layouts: shadow DOM, lazy avatars, SVG photos, fullscreen video, modal dialogs
 - hostile pages that fight back: removing Dusk's attribute in a loop, replacing `<html>`, strict CSP, 100,000 elements, broken storage
@@ -119,6 +119,7 @@ Without `TEAM`, the script opens the project in Xcode instead: pick your team un
 Each of these has a test that documents it.
 
 - **Very saturated colours come back duller.** Pure red returns as about (172, 63, 63). Any filter that keeps page hues right has this limit.
+- **The first visit to a dark web app** can show it inverted briefly: Dusk checks again 0.3, 0.8 and 1.6 s after the page appears. Later visits start dark.
 - **Emoji are text**, so they are inverted with the page.
 - **Images larger than half the window stay inverted**, so page wallpapers stay dark. Text drawn on top of a large photo can be hard to read.
 - **Closed shadow roots** cannot be reached by any extension. Frames are not darkened from inside.

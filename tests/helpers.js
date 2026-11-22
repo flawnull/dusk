@@ -64,6 +64,14 @@ function stubApi({ initial, tab, sendMessage }) {
       setTimeout(() => changeListeners.forEach((fn) => fn(clone(changes), "local")), 0);
       return Promise.resolve();
     },
+    remove(keys) {
+      const changes = {};
+      for (const k of [].concat(keys)) {
+        if (k in store) { changes[k] = { oldValue: clone(store[k]) }; delete store[k]; }
+      }
+      if (Object.keys(changes).length) setTimeout(() => changeListeners.forEach((fn) => fn(clone(changes), "local")), 0);
+      return Promise.resolve();
+    },
   };
 
   window.browser = {
@@ -105,10 +113,16 @@ function watch(page) {
 
 // Loads `html` at http://example.test/<pathname> with the content script
 // injected at document start, the way Safari does with run_at document_start.
-async function openPage(page, { html = "<!doctype html><p>Hello</p>", settings = {}, pathname = "/" } = {}) {
+// `slow` maps extra paths to a delay in ms: a page that references one only
+// fires load after it, the way a slow image holds up a real site.
+async function openPage(page, { html = "<!doctype html><p>Hello</p>", settings = {}, pathname = "/", slow = {} } = {}) {
   const log = watch(page);
-  await page.route("**/*", (route) => {
+  await page.route("**/*", async (route) => {
     const url = new URL(route.request().url());
+    if (url.origin === ORIGIN && Object.prototype.hasOwnProperty.call(slow, url.pathname)) {
+      await new Promise((r) => setTimeout(r, slow[url.pathname]));
+      return route.fulfill({ status: 404, body: "" });
+    }
     if (url.origin === ORIGIN && url.pathname === pathname) {
       return route.fulfill({ status: 200, contentType: "text/html", body: html });
     }

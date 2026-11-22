@@ -10,7 +10,8 @@
 // layout, and stops while the tab is hidden or Dusk is off for the site.
 //
 // What it never does: network requests, reading page content, reading
-// keystrokes, screenshots. The only thing it stores is your settings.
+// keystrokes, screenshots. It stores your settings, and which sites turned
+// out to be dark already, so the next visit to them starts right.
 
 (() => {
   "use strict";
@@ -212,6 +213,13 @@
 
   let settings = { ...DEFAULTS };
   let siteIsDark = false;
+
+  // Sites that follow the Mac's appearance are dark in dark mode only, so the
+  // answer is remembered per host and appearance. Only dark sites get a key
+  // (removed again if one turns light), so storage stays small, and one key
+  // is read per page instead of a whole list.
+  const darkKey = () => "dark:" + (systemDark.matches ? "d:" : "l:") + host;
+  let rememberedDark = false; // what storage said for darkKey()
 
   function siteMode() {
     const modes = settings.siteModes;
@@ -574,17 +582,45 @@
     return settings.enabled !== false && !(settings.followSystem === true && !systemDark.matches) && siteMode() === "auto";
   }
 
-  function checkDark() {
-    darkScheduled = false;
-    if (!needsDarkCheck()) return; // measured later, if the site is set back to Auto
-    darkStale = false;
+  // Web apps often paint their dark theme seconds after DOMContentLoaded.
+  // Until the page has loaded, a check may only switch Dusk off (light to
+  // dark), never back on: a half-built page can look light, and trusting it
+  // would invert a dark site for a moment. From load on, every check counts
+  // and the result is remembered for the next visit.
+  const EARLY_CHECKS = [300, 800, 1600]; // ms after DOMContentLoaded
+  let earlyTimers = [];
+
+  function measureDark() {
     // Read the page's own <html> background: data-dusk-measure switches off
     // the one rule in dusk.css that changes it. Only <html> is restyled, and
     // it is switched back in the same task, so nothing flashes.
     const de = document.documentElement;
     const on = !!de && de.hasAttribute(ATTR);
     if (on) de.setAttribute(MEASURE, "");
-    try { siteIsDark = pageIsAlreadyDark(); } finally { if (on) de.removeAttribute(MEASURE); }
+    try { return pageIsAlreadyDark(); } finally { if (on) de.removeAttribute(MEASURE); }
+  }
+
+  function remember(dark) {
+    if (dark === rememberedDark) return;
+    rememberedDark = dark;
+    try {
+      const p = dark ? api.storage.local.set({ [darkKey()]: 1 }) : api.storage.local.remove(darkKey());
+      if (p && p.catch) p.catch(() => {});
+    } catch { /* extension context gone */ }
+  }
+
+  function checkDark() {
+    darkScheduled = false;
+    if (!needsDarkCheck()) return; // measured later, if the site is set back to Auto
+    const final = document.readyState === "complete";
+    const dark = measureDark();
+    if (final) {
+      darkStale = false;
+      siteIsDark = dark;
+      remember(dark);
+    } else if (dark) {
+      siteIsDark = true;
+    }
     render();
   }
 
@@ -592,6 +628,13 @@
     if (darkScheduled || document.readyState === "loading") return;
     darkScheduled = true;
     requestAnimationFrame(checkDark);
+  }
+
+  function scheduleEarlyChecks() {
+    for (const t of earlyTimers) clearTimeout(t);
+    earlyTimers = EARLY_CHECKS.map((ms) => setTimeout(() => {
+      if (document.readyState !== "complete" && !siteIsDark && needsDarkCheck()) scheduleDarkCheck();
+    }, ms));
   }
 
   let lastRoot = document.documentElement;
@@ -651,8 +694,14 @@
 
   function loadSettings() {
     try {
-      return api.storage.local.get(DEFAULTS).then((stored) => {
-        settings = { ...DEFAULTS, ...stored };
+      const key = darkKey();
+      return api.storage.local.get({ ...DEFAULTS, [key]: 0 }).then((stored) => {
+        const { [key]: dark, ...rest } = stored || {};
+        settings = { ...DEFAULTS, ...rest };
+        rememberedDark = dark === 1;
+        // Start from what the last visit found; the checks below still run
+        // and correct it once the page has loaded.
+        if (darkStale) siteIsDark = rememberedDark;
         render();
       }).catch(render);
     } catch {
@@ -667,7 +716,9 @@
   loadSettings();
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", render, { once: true });
+    document.addEventListener("DOMContentLoaded", () => { render(); scheduleEarlyChecks(); }, { once: true });
+  } else if (document.readyState === "interactive") {
+    scheduleEarlyChecks();
   }
   // Pages that paint their theme late (web apps) get one more look, after the
   // page's own load handlers (this listener is registered before theirs).
@@ -675,7 +726,19 @@
     addEventListener("load", () => setTimeout(() => { darkStale = true; render(); }, 0), { once: true });
   }
 
-  systemDark.addEventListener("change", render);
+  // The Mac switched appearance: sites that follow it change too. Start from
+  // what was remembered for the new appearance and measure again.
+  systemDark.addEventListener("change", () => {
+    darkStale = true;
+    try {
+      const key = darkKey();
+      api.storage.local.get({ [key]: 0 }).then((r) => {
+        rememberedDark = !!r && r[key] === 1;
+        siteIsDark = rememberedDark;
+        render();
+      }).catch(render);
+    } catch { render(); }
+  });
 
   // A page restored from the back/forward cache may have missed setting changes.
   addEventListener("pageshow", (e) => { if (e.persisted) loadSettings(); });
@@ -689,10 +752,12 @@
     // Live updates when you flip a switch in the popup.
     api.storage.onChanged.addListener((changes, area) => {
       if (area !== "local") return;
+      let relevant = false;
       for (const [key, { newValue }] of Object.entries(changes)) {
-        if (own(DEFAULTS, key)) settings[key] = newValue ?? DEFAULTS[key];
+        if (own(DEFAULTS, key)) { settings[key] = newValue ?? DEFAULTS[key]; relevant = true; }
       }
-      render();
+      // Another tab remembering a dark site is not a settings change.
+      if (relevant) render();
     });
 
     api.runtime.onMessage.addListener((msg) => {
