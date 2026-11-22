@@ -255,3 +255,32 @@ test.describe("lazy-loaded images (LinkedIn avatars)", () => {
     expect(await page.evaluate(() => document.querySelectorAll("[data-dusk-bg]").length)).toBe(0);
   });
 });
+
+// Adopting Dusk's sheet into a shadow root dirties that root's styles; a
+// computed-style read in the same task then forces WebKit to restyle at once
+// (12-28 ms slices on Reddit, ~1,600 shadow roots). Sheets are adopted at the
+// end of a slice, so the restyle happens in the next frame's normal work.
+test.describe("shadow roots and forced restyles", () => {
+  test("no style read in the same task as adopting a shadow sheet", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__dirtyReads = 0;
+      let dirty = false;
+      const d = Object.getOwnPropertyDescriptor(ShadowRoot.prototype, "adoptedStyleSheets");
+      Object.defineProperty(ShadowRoot.prototype, "adoptedStyleSheets", {
+        configurable: true,
+        get() { return d.get.call(this); },
+        set(v) { d.set.call(this, v); if (!dirty) { dirty = true; setTimeout(() => { dirty = false; }, 0); } },
+      });
+      const gcs = window.getComputedStyle;
+      window.getComputedStyle = function (...a) { if (dirty) window.__dirtyReads++; return gcs.apply(this, a); };
+    });
+    const hosts = Array.from({ length: 60 }, (_, i) => `<div class="h" id="h${i}"></div>`).join("");
+    const script = `for (const h of document.querySelectorAll(".h")) h.attachShadow({ mode: "open" }).innerHTML = "<p>x</p><span style='display:block;width:20px;height:20px;background:url(${IMG})'></span><p>y</p>";`;
+    await openPage(page, { html: doc("", hosts + `<script>${script}</script>`) });
+    await scanDone(page);
+    expect(await page.evaluate(() => window.__dirtyReads)).toBe(0);
+    // And the photos inside the shadow roots are still marked.
+    const inShadow = await page.evaluate(() => [...document.querySelectorAll(".h")].filter((h) => h.shadowRoot.querySelector("[data-dusk-bg]")).length);
+    expect(inShadow).toBe(60);
+  });
+});

@@ -496,6 +496,11 @@
     const settled = performance.now() - RECHECK_MS;
     let recheckDone = true;
     const todo = [];
+    // Shadow roots found in this slice get Dusk's sheet only at its end:
+    // adopting a sheet dirties the root's styles, and the next style read
+    // would force WebKit to restyle right then (12-28 ms on Reddit). At the
+    // end of the slice, the restyle happens in the next frame's normal work.
+    const newRoots = [];
     if (recheckReady) for (const el of bgRecheck) {
       if ((lastChange.get(el) || 0) > settled) continue; // still changing
       bgRecheck.delete(el);
@@ -514,7 +519,7 @@
             const info = classify(el);
             if (wantsAny(info)) todo.push([el, info]);
           }
-          if (el.shadowRoot) attachShadow(el.shadowRoot);
+          if (el.shadowRoot && !shadowRoots.has(el.shadowRoot)) newRoots.push(el.shadowRoot);
         }
         el = walker.nextNode();
         if (performance.now() >= end) break;
@@ -523,6 +528,7 @@
     }
     if (recheckReady && recheckDone) recheckReady = false;
     for (const [el, info] of todo) decide(el, info);
+    for (const sr of newRoots) attachShadow(sr); // last: no style reads after this
     if (bgQueue.length || (recheckReady && bgRecheck.size)) scheduleBg();
     else if (bgRecheck.size) {
       // Wake up when the next element has been stable long enough.
