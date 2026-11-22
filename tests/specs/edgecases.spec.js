@@ -439,7 +439,6 @@ test("25 site with its own prefers-color-scheme: dark theme, system dark", async
 });
 
 test("26 large hero photo as a stylesheet background (over half the viewport)", async ({ page }) => {
-  test.fail(true, "LIMIT: elements over 50% of the viewport are not re-inverted, to protect page wallpapers");
   await openTop(page, doc(`<div class="hero"></div>`,
     `<style>.hero{position:absolute;left:0;top:0;width:1200px;height:500px;background-image:url('${Y}');background-size:cover}</style>`));
   await expectNatural("26 big hero", page);

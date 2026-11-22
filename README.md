@@ -7,7 +7,7 @@
 ![Safari](https://img.shields.io/badge/Safari-15.4%2B-1c1c1e?style=flat-square&logo=safari&logoColor=9aa5ff)
 ![Manifest](https://img.shields.io/badge/manifest-v3-1c1c1e?style=flat-square)
 ![Network](https://img.shields.io/badge/network_requests-0-1c1c1e?style=flat-square)
-![Tests](https://img.shields.io/badge/WebKit_tests-235_passing-1c1c1e?style=flat-square)
+![Tests](https://img.shields.io/badge/WebKit_tests-241_passing-1c1c1e?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-1c1c1e?style=flat-square)
 
 <img src="docs/before-after.png" alt="A light article page on the left and the same page darkened by Dusk on the right, with the sunset photo keeping its colors" width="860">
@@ -85,7 +85,7 @@ Measured in WebKit, Safari's engine, median of 5 runs. The heavy page has 30,000
 
 The test suite runs Dusk in real WebKit:
 
-- 235 tests, run 3× in CI-style passes with no flakes
+- 241 tests, run 3× in CI-style passes with no flakes
 - about 4,700 generated cases (every CSS colour syntax checked against a canvas, random settings, random DOM trees up to 5,000 wide or 2,000 deep)
 - pixel checks on 44 tricky layouts: shadow DOM, lazy avatars, SVG photos, fullscreen video, modal dialogs
 - hostile pages that fight back: removing Dusk's attribute in a loop, replacing `<html>`, strict CSP, 100,000 elements, broken storage
@@ -121,7 +121,7 @@ Each of these has a test that documents it.
 - **Very saturated colours come back duller.** Pure red returns as about (172, 63, 63). Any filter that keeps page hues right has this limit.
 - **The first visit to a dark web app** can show it inverted briefly: Dusk checks again 0.3, 0.8 and 1.6 s after the page appears. Later visits start dark.
 - **Emoji are text**, so they are inverted with the page.
-- **Images larger than half the window stay inverted**, so page wallpapers stay dark. Text drawn on top of a large photo can be hard to read.
+- **Photo backgrounds that fill the window, repeat, or sit fixed behind the page stay inverted**, so the page text on top of them stays readable. Hero banners and photos in `<img>` keep their real colours.
 - **Closed shadow roots** cannot be reached by any extension. Frames are not darkened from inside.
 - **List-bullet images and `border-image`** are not re-inverted.
 - **Sites can tell Dusk is on**, from the `data-dusk` attribute and the filter on `<html>`.

@@ -387,8 +387,15 @@
   // for leaf elements, whose ::before/::after may draw an icon photo).
   function classify(el) {
     const cs = getComputedStyle(el);
-    const info = { bg: false, keep: false, scrim: 0, pb: false, pa: false };
+    const info = { bg: false, keep: false, scrim: 0, pb: false, pa: false, hero: false };
     info.bg = photoUrl(cs.backgroundImage);
+    // A large background that is drawn once (no-repeat, or sized to cover or
+    // fit its box) in normal flow is a photo: a hero banner. Repeating
+    // textures and fixed backdrops are wallpaper.
+    if (info.bg) {
+      info.hero = cs.position !== "fixed" &&
+        (/^no-repeat/.test(cs.backgroundRepeat) || /\b(cover|contain)\b/.test(cs.backgroundSize));
+    }
     const bg = toRGBA(cs.backgroundColor);
     if (bg && bg[3] > 0) {
       const lum = luma(bg);
@@ -450,7 +457,10 @@
   function applyInfo(el, info, area, viewport) {
     if (!el.isConnected) return;
     const small = !(viewport > 0 && area > 0.5 * viewport);
-    setMark(el, BG, info.bg && small && photoLike(el));
+    // A hero may be large, but not the whole window: a photo that covers the
+    // screen sits behind the page's text, which must stay readable.
+    const hero = info.hero && viewport > 0 && area < 0.9 * viewport;
+    setMark(el, BG, info.bg && (small || hero) && photoLike(el));
     setMark(el, KEEP, info.keep && small && area >= KEEP_MIN_AREA && !el.hasAttribute(BG));
     const scrim = info.scrim > 0 && viewport > 0 && area >= 0.4 * viewport;
     const alpha = info.scrim.toFixed(3);

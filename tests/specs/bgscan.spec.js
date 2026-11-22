@@ -50,6 +50,43 @@ test("full-viewport wallpaper is NOT marked", async ({ page }) => {
   expect(await marked(page, "#w")).toBe(false);
 });
 
+// Over half the viewport: a photo that does not repeat (a hero banner) is
+// re-inverted; a repeating texture, a fixed backdrop or one covering nearly
+// the whole window stays with the page, so text drawn over it stays readable.
+test.describe("large backgrounds", () => {
+  const big = (css, body = "") => doc(`#h{position:absolute;left:0;top:0;width:100%;height:70vh;${css}}`, `<div id="h">${body}</div>`);
+  test("a large hero photo (cover) is re-inverted", async ({ page }) => {
+    await openPage(page, { html: big(`background:url(${IMG}) center/cover no-repeat`, "<h1>Headline</h1>") });
+    await scanDone(page);
+    expect(await marked(page, "#h")).toBe(true);
+  });
+  test("a large no-repeat photo is re-inverted", async ({ page }) => {
+    await openPage(page, { html: big(`background-image:url(${IMG});background-repeat:no-repeat`) });
+    await scanDone(page);
+    expect(await marked(page, "#h")).toBe(true);
+  });
+  test("a large repeating texture is not", async ({ page }) => {
+    await openPage(page, { html: big(`background-image:url(${IMG})`) });
+    await scanDone(page);
+    expect(await marked(page, "#h")).toBe(false);
+  });
+  test("a fixed cover photo behind the page is not", async ({ page }) => {
+    await openPage(page, { html: doc(`#w{position:fixed;left:0;top:0;width:100%;height:70vh;background:url(${IMG}) center/cover no-repeat}`, '<div id="w"></div><p>page text</p>') });
+    await scanDone(page);
+    expect(await marked(page, "#w")).toBe(false);
+  });
+  test("a cover photo filling the whole window is not", async ({ page }) => {
+    await openPage(page, { html: doc(`#w{position:absolute;inset:0;background:url(${IMG}) center/cover no-repeat}`, '<div id="w"></div>') });
+    await scanDone(page);
+    expect(await marked(page, "#w")).toBe(false);
+  });
+  test("a large cover photo full of text is not", async ({ page }) => {
+    await openPage(page, { html: big(`background:url(${IMG}) center/cover no-repeat`, "<p>" + "words ".repeat(80) + "</p>") });
+    await scanDone(page);
+    expect(await marked(page, "#h")).toBe(false);
+  });
+});
+
 test("bg image on <body> is NOT marked", async ({ page }) => {
   await openPage(page, { html: doc(`body{background-image:url(${IMG})}`, "<p>x</p>") });
   await scanDone(page);
