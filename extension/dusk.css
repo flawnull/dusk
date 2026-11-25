@@ -14,6 +14,7 @@
    data-dusk-keep   block that was dark on the original page; kept dark
    data-dusk-scrim  translucent dark overlay behind a modal; kept dark
    data-dusk-pb/pa  ::before / ::after shows a photo
+   data-dusk-emoji  element whose whole text is colour emoji
    Selectors are written out, not grouped in :is(), so WebKit can index each
    rule by tag or attribute, and an unknown selector only drops its own rule. */
 
@@ -98,12 +99,47 @@ html[data-dusk] [data-dusk-pa]::after {
   will-change: filter !important;
 }
 
+/* Colour emoji: an element holding only emoji (marked by content.js), and
+   emoji images. Emoji images are often SVG files (Twemoji, WordPress), which
+   the rule above leaves inverted; these come after it and win. */
+html[data-dusk] [data-dusk-emoji],
+html[data-dusk] img.emoji,
+html[data-dusk] img[src*="emoji" i] {
+  filter: brightness(var(--dusk-img, 1)) invert(1) contrast(var(--dusk-c, 1.19)) hue-rotate(180deg) !important;
+  will-change: filter !important;
+}
+html[data-dusk] [data-dusk-bg] [data-dusk-emoji],
+html[data-dusk] [data-dusk-bg] img.emoji,
+html[data-dusk] [data-dusk-bg] img[src*="emoji" i],
+html[data-dusk] [data-dusk-keep] [data-dusk-emoji],
+html[data-dusk] [data-dusk-keep] img.emoji,
+html[data-dusk] [data-dusk-keep] img[src*="emoji" i],
+html[data-dusk] :fullscreen [data-dusk-emoji],
+html[data-dusk] :fullscreen img.emoji,
+html[data-dusk] :fullscreen img[src*="emoji" i] {
+  filter: none !important;
+}
+
 /* A translucent black overlay behind a modal would turn into a milky white
    veil. Painting it white with the same alpha makes it dark again after the
    page filter, without touching its children. */
-html[data-dusk] [data-dusk-scrim] {
-  background-color: rgb(255 255 255 / var(--dusk-scrim-a, 0.5)) !important;
-}
+/* One rule per 0.05 step of the backdrop's strength (content.js scrimStep). */
+html[data-dusk] [data-dusk-scrim="0.15"] { background-color: rgb(255 255 255 / 0.15) !important; }
+html[data-dusk] [data-dusk-scrim="0.20"] { background-color: rgb(255 255 255 / 0.20) !important; }
+html[data-dusk] [data-dusk-scrim="0.25"] { background-color: rgb(255 255 255 / 0.25) !important; }
+html[data-dusk] [data-dusk-scrim="0.30"] { background-color: rgb(255 255 255 / 0.30) !important; }
+html[data-dusk] [data-dusk-scrim="0.35"] { background-color: rgb(255 255 255 / 0.35) !important; }
+html[data-dusk] [data-dusk-scrim="0.40"] { background-color: rgb(255 255 255 / 0.40) !important; }
+html[data-dusk] [data-dusk-scrim="0.45"] { background-color: rgb(255 255 255 / 0.45) !important; }
+html[data-dusk] [data-dusk-scrim="0.50"] { background-color: rgb(255 255 255 / 0.50) !important; }
+html[data-dusk] [data-dusk-scrim="0.55"] { background-color: rgb(255 255 255 / 0.55) !important; }
+html[data-dusk] [data-dusk-scrim="0.60"] { background-color: rgb(255 255 255 / 0.60) !important; }
+html[data-dusk] [data-dusk-scrim="0.65"] { background-color: rgb(255 255 255 / 0.65) !important; }
+html[data-dusk] [data-dusk-scrim="0.70"] { background-color: rgb(255 255 255 / 0.70) !important; }
+html[data-dusk] [data-dusk-scrim="0.75"] { background-color: rgb(255 255 255 / 0.75) !important; }
+html[data-dusk] [data-dusk-scrim="0.80"] { background-color: rgb(255 255 255 / 0.80) !important; }
+html[data-dusk] [data-dusk-scrim="0.85"] { background-color: rgb(255 255 255 / 0.85) !important; }
+html[data-dusk] [data-dusk-scrim="0.90"] { background-color: rgb(255 255 255 / 0.90) !important; }
 
 /* Modal dialogs and popovers render in the top layer, outside the page
    filter, so they get their own. One rule per selector: an old Safari that

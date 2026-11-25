@@ -278,6 +278,8 @@
     `img[src*=".svg" i], img[src^="data:image/svg" i] { filter: none !important; }`,
     `${["[data-dusk-bg]", "[data-dusk-keep]"].flatMap((b) => MEDIA_SEL.map((m) => `${b} ${m}`)).join(", ")}, picture img { filter: none !important; }`,
     `[data-dusk-pb]::before, [data-dusk-pa]::after { filter: ${MEDIA_F} !important; will-change: filter !important; }`,
+    `[data-dusk-emoji], img.emoji, img[src*="emoji" i] { filter: ${MEDIA_F} !important; will-change: filter !important; }`,
+    `${["[data-dusk-bg]", "[data-dusk-keep]"].map((b) => `${b} [data-dusk-emoji], ${b} img.emoji, ${b} img[src*="emoji" i]`).join(", ")} { filter: none !important; }`,
   ];
   let shadowSheet = null;
   let shadowOn = false;
@@ -321,8 +323,8 @@
   // Reads only computed styles, never layout: sizes come from an
   // IntersectionObserver, which reports them after layout without forcing it.
   const BG = "data-dusk-bg", KEEP = "data-dusk-keep", SCRIM = "data-dusk-scrim";
-  const PB = "data-dusk-pb", PA = "data-dusk-pa";
-  const MARKS = [BG, KEEP, SCRIM, PB, PA];
+  const PB = "data-dusk-pb", PA = "data-dusk-pa", EMOJI = "data-dusk-emoji";
+  const MARKS = [BG, KEEP, SCRIM, PB, PA, EMOJI];
   const MAX_BOXES = 3000;    // filtered boxes cost an offscreen buffer each when on screen
   const KEEP_MIN_AREA = 30000;
   const TEXT_LIMIT = 200;    // a "photo" with more text than this is a content box
@@ -347,7 +349,19 @@
       return NodeFilter.FILTER_ACCEPT;
     },
   };
-  const OBSERVE = { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style"] };
+  const OBSERVE = { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["class", "style"] };
+
+  // Colour emoji are pictures drawn by the font: the page filter turns them
+  // into their negative. An element holding only emoji is re-inverted like
+  // an image. Emoji inside a sentence cannot be reached without rewriting the
+  // page's text, so they stay inverted. Symbols drawn as text (©, ✔, and ❤
+  // without the emoji selector) are not emoji here: they follow the text colour.
+  const EMOJI_LEN = 32;
+  const EMOJI_SHOWN = /\p{Emoji_Presentation}|\p{Extended_Pictographic}\uFE0F|\p{Regional_Indicator}/u;
+  const EMOJI_PARTS = /\p{Extended_Pictographic}|\p{Emoji_Modifier}|\p{Regional_Indicator}|[\u200D\uFE0F\u20E3\s]/gu;
+  function emojiOnly(text) {
+    return text.length <= EMOJI_LEN && EMOJI_SHOWN.test(text) && text.replace(EMOJI_PARTS, "") === "";
+  }
 
   let bgQueue = [];          // TreeWalkers still to finish
   let bgRecheck = new Set(); // elements whose class or style changed
@@ -387,7 +401,7 @@
   // for leaf elements, whose ::before/::after may draw an icon photo).
   function classify(el) {
     const cs = getComputedStyle(el);
-    const info = { bg: false, keep: false, scrim: 0, pb: false, pa: false, hero: false };
+    const info = { bg: false, keep: false, scrim: 0, pb: false, pa: false, hero: false, emoji: false };
     info.bg = photoUrl(cs.backgroundImage);
     // A large background that is drawn once (no-repeat, or sized to cover or
     // fit its box) in normal flow is a photo: a hero banner. Repeating
@@ -399,12 +413,17 @@
     const bg = toRGBA(cs.backgroundColor);
     if (bg && bg[3] > 0) {
       const lum = luma(bg);
-      if (bg[3] >= 0.9) {
+      const own = scrimRepaint(el, bg, lum);
+      if (own) info.scrim = own;
+      else if (bg[3] >= 0.9) {
         if (lum < 0.08) info.keep = true;
       } else if (bg[3] >= 0.15 && lum < 0.3 && (cs.position === "fixed" || cs.position === "absolute")) {
         info.scrim = bg[3];
       }
     }
+    // Re-inverting a box also flips its background back to light: only a
+    // transparent one may be marked.
+    if (el.childElementCount === 0 && !info.bg && !(bg && bg[3] >= 0.1)) info.emoji = emojiOnly(el.textContent);
     // ::before/::after photos sit on empty icon elements (<i>, <span>). Only
     // those are checked: two extra style reads per element would double the
     // scanner's cost on text-heavy pages for no gain.
@@ -416,7 +435,22 @@
     return info;
   }
 
-  const wantsAny = (i) => i.bg || i.keep || i.scrim > 0 || i.pb || i.pa;
+  // A marked backdrop is painted white by dusk.css at the strength stored in
+  // its mark. Read back, that white must count as the original dark layer:
+  // otherwise the next recheck unmarks it, the page turns dark again, the one
+  // after marks it again, and the page flickers.
+  function scrimRepaint(el, bg, lum) {
+    const mark = el.getAttribute(SCRIM);
+    if (!mark) return 0;
+    const a = Number(mark);
+    return lum > 0.95 && Math.abs(bg[3] - a) < 0.03 ? a : 0;
+  }
+
+  // Strength in steps of 0.05, one CSS rule each: no inline style is written,
+  // so the page's own style observers (and Dusk's) never see a change.
+  const scrimStep = (a) => (Math.min(0.9, Math.max(0.15, Math.round(a * 20) / 20))).toFixed(2);
+
+  const wantsAny = (i) => i.bg || i.keep || i.scrim > 0 || i.pb || i.pa || i.emoji;
 
   // Photos are re-inverted with everything inside them. A box full of text,
   // or one holding a panel with its own background and text (a chat bubble
@@ -466,14 +500,14 @@
     setMark(el, BG, info.bg && (small || hero) && photoLike(el));
     setMark(el, KEEP, info.keep && small && area >= KEEP_MIN_AREA && !el.hasAttribute(BG));
     const scrim = info.scrim > 0 && viewport > 0 && area >= 0.4 * viewport;
-    const alpha = info.scrim.toFixed(3);
-    if (scrim && el.style.getPropertyValue("--dusk-scrim-a") !== alpha) {
-      el.style.setProperty("--dusk-scrim-a", alpha, "important");
+    if (!scrim) setMark(el, SCRIM, false);
+    else {
+      const step = scrimStep(info.scrim);
+      if (el.getAttribute(SCRIM) !== step) el.setAttribute(SCRIM, step);
     }
-    else if (el.hasAttribute(SCRIM)) el.style.removeProperty("--dusk-scrim-a");
-    setMark(el, SCRIM, scrim);
     setMark(el, PB, info.pb && small);
     setMark(el, PA, info.pa && small);
+    setMark(el, EMOJI, info.emoji && small);
   }
 
   // Unmark at once what no longer applies; measure what might.
@@ -570,13 +604,25 @@
     queueRoot(node);
   }
 
+  const hasText = (...lists) => lists.some((l) => Array.prototype.some.call(l, (n) => n.nodeType === 3));
+
   function startBgScan() {
     if (!document.body || document.visibilityState === "hidden") return;
     if (!bgObserver) {
       bgObserver = new MutationObserver((records) => {
         for (const r of records) {
           if (r.type === "attributes") { bgRecheck.add(r.target); lastChange.set(r.target, performance.now()); }
-          else for (const node of r.addedNodes) queueBg(node);
+          else if (r.type === "characterData") {
+            // Text edited in place (a counter, a reaction picker): its element
+            // may have become, or stopped being, emoji only.
+            const el = r.target.parentElement;
+            if (el) { bgRecheck.add(el); lastChange.set(el, performance.now()); }
+          } else {
+            if (r.target.nodeType === 1 && hasText(r.addedNodes, r.removedNodes)) {
+              bgRecheck.add(r.target); lastChange.set(r.target, performance.now());
+            }
+            for (const node of r.addedNodes) queueBg(node);
+          }
         }
         if (bgRecheck.size) armRecheck();
       });

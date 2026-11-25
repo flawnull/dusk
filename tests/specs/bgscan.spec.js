@@ -324,3 +324,72 @@ test.describe("shadow roots and forced restyles", () => {
     expect(inShadow).toBe(60);
   });
 });
+
+// Modal and cookie-banner backdrops: a translucent black layer over the page.
+// Inverted as is it would turn into a milky white veil, so Dusk marks it and
+// paints it white at the same strength, which the page filter turns dark.
+test.describe("modal backdrops", () => {
+  const backdrop = (alpha = 0.6) => doc(
+    `#s{position:fixed;inset:0;background:rgba(0,0,0,${alpha})}#m{position:fixed;left:40%;top:40%;width:200px;height:100px;background:#fff}`,
+    '<p>page</p><div id="s"></div><div id="m"><button id="b">OK</button></div>');
+  const watchMarks = (page) => page.evaluate(() => {
+    window.__flips = 0;
+    new MutationObserver((r) => { window.__flips += r.length; })
+      .observe(document.getElementById("s"), { attributes: true, attributeFilter: ["data-dusk-scrim", "style"] });
+  });
+
+  test("a backdrop is marked and painted at its own strength", async ({ page }) => {
+    await openPage(page, { html: backdrop(0.6) });
+    await scanDone(page);
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => getComputedStyle(document.getElementById("s")).backgroundColor)).toBe("rgba(255, 255, 255, 0.6)");
+  });
+
+  test("a marked backdrop is never flipped back and forth (no flicker)", async ({ page }) => {
+    await openPage(page, { html: backdrop(0.6) });
+    await scanDone(page);
+    await page.waitForTimeout(300);
+    await watchMarks(page);
+    await page.waitForTimeout(800);
+    expect(await page.evaluate(() => window.__flips)).toBe(0);
+    expect(await page.evaluate(() => document.getElementById("s").hasAttribute("data-dusk-scrim"))).toBe(true);
+  });
+
+  test("clicking and tabbing inside the dialog does not make the backdrop flicker", async ({ page }) => {
+    await openPage(page, { html: backdrop(0.6) });
+    await scanDone(page);
+    await page.waitForTimeout(300);
+    await watchMarks(page);
+    await page.click("#b");
+    for (let i = 0; i < 5; i++) await page.keyboard.press("Tab");
+    await page.waitForTimeout(600);
+    expect(await page.evaluate(() => window.__flips)).toBe(0);
+  });
+
+  test("a backdrop the page restyles (class change on open) stays marked", async ({ page }) => {
+    await openPage(page, { html: backdrop(0.6) });
+    await scanDone(page);
+    await page.waitForTimeout(300);
+    await watchMarks(page);
+    await page.evaluate(() => document.getElementById("s").classList.add("open"));
+    await page.waitForTimeout(150);
+    await page.evaluate(() => document.getElementById("s").classList.add("focused"));
+    await page.waitForTimeout(600);
+    expect(await page.evaluate(() => window.__flips)).toBe(0);
+    expect(await page.evaluate(() => document.getElementById("s").getAttribute("data-dusk-scrim"))).toBe("0.60");
+  });
+
+  test("Dusk leaves the backdrop's style attribute alone", async ({ page }) => {
+    await openPage(page, { html: backdrop(0.6) });
+    await scanDone(page);
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => document.getElementById("s").getAttribute("style"))).toBe(null);
+  });
+
+  test("a faint layer (under 15%) is not a backdrop", async ({ page }) => {
+    await openPage(page, { html: backdrop(0.1) });
+    await scanDone(page);
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => document.getElementById("s").hasAttribute("data-dusk-scrim"))).toBe(false);
+  });
+});

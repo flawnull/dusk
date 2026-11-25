@@ -423,10 +423,15 @@ test("23 img nested inside an element with a url background (no double flip)", a
 
 // ---------------------------------------------------------------- text, dark sites
 
-test("24 color emoji in text", async ({ page }) => {
-  test.fail(true, "LIMIT: emoji are text glyphs, inverted with the page (yellow face turns dark)");
+test("24 color emoji on their own", async ({ page }) => {
   await openTop(page, doc(`<div class="f" style="font-size:80px;line-height:100px">😀</div>`));
   await expectNatural("24 emoji", page, { x: 110, y: 110, w: 80, h: 80 });
+});
+
+test("24b color emoji inside a sentence", async ({ page }) => {
+  test.fail(true, "LIMIT: an emoji inside text cannot be re-inverted without rewriting the page's text");
+  await openTop(page, doc(`<div class="f" style="font-size:80px;line-height:100px;white-space:nowrap">😀 ok</div>`));
+  await expectNatural("24b emoji in text", page, { x: 110, y: 110, w: 80, h: 80 });
 });
 
 test("25 site with its own prefers-color-scheme: dark theme, system dark", async ({ page }) => {

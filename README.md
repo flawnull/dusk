@@ -7,7 +7,7 @@
 ![Safari](https://img.shields.io/badge/Safari-15.4%2B-1c1c1e?style=flat-square&logo=safari&logoColor=9aa5ff)
 ![Manifest](https://img.shields.io/badge/manifest-v3-1c1c1e?style=flat-square)
 ![Network](https://img.shields.io/badge/network_requests-0-1c1c1e?style=flat-square)
-![Tests](https://img.shields.io/badge/WebKit_tests-243_passing-1c1c1e?style=flat-square)
+![Tests](https://img.shields.io/badge/WebKit_tests-261_passing-1c1c1e?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-1c1c1e?style=flat-square)
 
 <img src="docs/before-after.png" alt="A light article page on the left and the same page darkened by Dusk on the right, with the sunset photo keeping its colors" width="860">
@@ -66,7 +66,8 @@ CSS cannot see everything that is a picture, so a small scanner fills the gaps. 
 |---|---|
 | `data-dusk-bg` | Photo backgrounds set from a stylesheet, including lazy-loaded avatars that get their photo later. |
 | `data-dusk-keep` | Blocks that were already black on the page, so they do not turn into white slabs. |
-| `data-dusk-scrim` | Translucent overlays behind modals, so they dim instead of turning into a milky veil. |
+| `data-dusk-scrim` | Translucent overlays behind modals and cookie banners, so they dim instead of turning into a milky veil. The strength lives in the mark, so the page never flickers when you click inside the dialog. |
+| `data-dusk-emoji` | Elements whose whole text is colour emoji (reactions, pickers). SVG emoji images (Twemoji, WordPress) are caught by CSS alone. |
 | `data-dusk-pb/pa` | Photos drawn by `::before` and `::after`. |
 
 Open shadow DOM gets the same rules through one shared constructed stylesheet. SVG logos and icons are left inverted with the text, because they are usually one dark colour and would vanish otherwise.
@@ -122,7 +123,7 @@ Each of these has a test that documents it.
 
 - **Very saturated colours come back duller.** Pure red returns as about (172, 63, 63). Any filter that keeps page hues right has this limit.
 - **The first visit to a dark web app** can show it inverted briefly: Dusk checks again 0.3, 0.8 and 1.6 s after the page appears. Later visits start dark.
-- **Emoji are text**, so they are inverted with the page.
+- **Emoji inside a sentence** stay inverted: reaching them would mean rewriting the page's text. Emoji on their own (reactions, pickers, emoji images) keep their colours.
 - **Photo backgrounds that fill the window, repeat, or sit fixed behind the page stay inverted**, so the page text on top of them stays readable. Hero banners and photos in `<img>` keep their real colours.
 - **Closed shadow roots** cannot be reached by any extension. Frames are not darkened from inside.
 - **List-bullet images and `border-image`** are not re-inverted.
